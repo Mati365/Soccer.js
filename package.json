@@ -1,0 +1,25 @@
+{
+  "name": "hax.js",
+  "version": "1.0.0",
+  "description": "Simple haxball clone written in ES6",
+  "main": "dist/index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/haxjs/haxjs-client.git"
+  },
+  "keywords": [
+    "haxball",
+    "soccer",
+    "es6",
+    "multiplayer"
+  ],
+  "author": "Mateusz Bagiński",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/haxjs/haxjs-client/issues"
+  },
+  "homepage": "https://github.com/haxjs/haxjs-client#readme"
+}
