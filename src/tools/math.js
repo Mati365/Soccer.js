@@ -3,7 +3,7 @@ import _ from "lodash";
 /**
  * Simple 2D Vector class
  */
-export default class Vec2 {
+export class Vec2 {
   constructor(x=0.0, y=0.0) {
     this.x = x;
     this.y = y;
@@ -24,8 +24,8 @@ export default class Vec2 {
 
   /**
    * Add to Vector
-   * @param {Vec2}    vec     Vector to add
-   * @param {number}  mul=1.0 Directrion
+   * @param vec     Vector to add
+   * @param mul=1.0 Direction
    */
   add(vec, mul=1.0) {
     this.x += vec.x * mul;
@@ -35,7 +35,7 @@ export default class Vec2 {
 
   /**
    * Mul by Vector
-   * @param  {Vec2} vec Vector to multiplayer
+   * @param vec Vector to multi-player
    */
   mul(vec) {
     if(vec instanceof Vec2) {
@@ -64,7 +64,7 @@ export default class Vec2 {
 
   /**
    * Normalize vector
-   * @return {Vec2} Normalized vector
+   * @return  Normalized vector
    */
   normalize() {
     let len = this.length;
@@ -76,10 +76,34 @@ export default class Vec2 {
 
   /**
    * Compare vectors
-   * @param  {Vec2} vector Vector
-   * @return {Bool}        True if equals
+   * @param   vector Vector
+   * @return  True if equals
    */
   equals(vector) {
     return vector.x === this.x && vector.y === this.y;
   }
-};
+}
+
+/**
+ * Simple 2D Rectangle class
+ */
+export class Rect extends Vec2 {
+  constructor(x=0.0, y=0.0, w=0.0, h=0.0) {
+    super(x, y);
+
+    this.w = w;
+    this.h = h;
+  }
+
+  /**
+   * Compare rectangles
+   * @param   rect Rectangle
+   *
+   * @return  True if equals
+   */
+  equals(rect) {
+    return super.equals(rect)
+      && this.w === rect.w
+      && this.h === rect.h;
+  }
+}

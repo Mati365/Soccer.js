@@ -1,3 +1,5 @@
-import { Canvas } from "./ui/canvas";
+import Canvas from "./ui/canvas";
 
-new Canvas;
+(() => {
+  new Canvas().run();
+})();
