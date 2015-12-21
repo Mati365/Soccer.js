@@ -1,38 +1,10 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import {Vec2, Rect} from "../tools/math.js";
-import Color from "../tools/color.js";
-
-/**
- * Canvas configuration from DOM element
- */
-export class Context {
-  constructor(selector) {
-    // Create canvas if DOM selector is not provided
-    if(!selector) {
-      this.dom_element = $("<canvas />").prop({
-          width: 300
-        , height: 300
-      })[0];
-      $("body").append(this.dom_element);
-    } else {
-      this.dom_element = $(selector)[0];
-      if(!this.dom_element)
-        throw "Cannot find canvas!";
-    }
-
-    // Context
-    this.ctx = this.dom_element.getContext("2d");
-
-    // Get size of canvas
-    this.size = new Rect(
-        0, 0
-      , $(this.dom_element).width()
-      , $(this.dom_element).height()
-    );
-  }
-}
+import Context from "./context";
+import Event from "./event";
+import Color from "../tools/color";
+import { Vec2 } from "../tools/math";
 
 /**
  * Main renderer class
@@ -50,20 +22,56 @@ export default class Canvas {
     // Application state e.g. game, menu
     this.states = {};
     this.activeState = null;
+
+    // Create DOM actions
+    this._initListeners();
   }
 
   /** Canvas context */
   get ctx() { return this.context.ctx; }
 
+  /** Create event listeners */
+  _initListeners() {
+    let mousePos = new Vec2;
+    $(this.context.domElement).mousedown(e => {
+      mousePos.xy = [
+          e.clientX - this.context.size.x
+        , e.clientY - this.context.size.y
+      ];
+      console.log(mousePos.xy);
+    });
+  }
+
+  /**
+   * Broadcast message to states, e.g. keyboard click
+   * @param data          Event data
+   * @param currentState  If true sends only to visible state
+   */
+  broadcast(data, currentState=false) {
+    if(currentState)
+      this.states[this.activeState].onEvent(data);
+    else
+      _(this.states).each(state => {
+        state.onEvent(data);
+      });
+  }
+
   /**
    * Set state
-   * @param name  State's name
-   * @param state State object
+   * @param name        State's name
+   * @param state       State object
+   * @param setDefault  Set state default
    */
-  state(name, state) {
+  state(name, state, setDefault=false) {
     if(name in this.states)
       throw new Error("Application state already exists!");
+
+    // Set state and init
     this.states[name] = state;
+    if(setDefault)
+      this.activeState = name;
+    state.init();
+
     return this;
   }
 
@@ -84,12 +92,12 @@ export default class Canvas {
         // Fixed step update
         if(delta >= frameTime) {
           delta -= frameTime;
-          state.update && state.update();
+          state.update();
         }
 
         // Calculate delta
         delta += -lastFrame + (lastFrame = Date.now());
-        state.draw && state.draw();
+        state.draw(this.ctx);
       }
 
       // Request new frame

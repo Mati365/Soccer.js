@@ -13,9 +13,9 @@ export class Vec2 {
   }
 
   /** Getters/Setters */
-  set xy([x, y]) {
-    this.x = x;
-    this.y = y;
+  set xy(xy) {
+    this.x = xy[0];
+    this.y = xy[1];
     return this;
   }
   get xy() {

@@ -1,5 +1,14 @@
-import Canvas from "./ui/canvas";
+import Canvas from "./engine/canvas";
+import { State } from "./engine/state";
 
 (() => {
-  new Canvas().run();
+  let layer =  new State();
+  layer.add({
+    draw: function(ctx) {
+
+    }
+  });
+  new Canvas()
+    .state("main", layer, true)
+    .run();
 })();
