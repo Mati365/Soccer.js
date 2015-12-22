@@ -106,4 +106,30 @@ export class Rect extends Vec2 {
       && this.w === rect.w
       && this.h === rect.h;
   }
+
+  /**
+   * Check if rectangles are intersecting
+   *
+   * @param rect  Rectangle
+   * @return True if intersect
+   */
+  intersect(rect) {
+    return rect.x + rect.w >= this.x
+      && rect.x <= this.x + this.w
+      && rect.y + rect.h >= this.y
+      && rect.y <= this.y + this.h;
+  }
+
+  /**
+   * Check if rectangle contains rectangle
+   *
+   * @param rect  Rectangle
+   * @return True if contains
+   */
+  contains(rect) {
+    return rect.x >= this.x
+      && rect.x + (rect.w || 0) <= this.x + this.w
+      && rect.y >= this.y
+      && rect.y + (rect.h || 0) <= this.y + this.h;
+  }
 }

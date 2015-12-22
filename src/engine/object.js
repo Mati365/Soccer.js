@@ -1,3 +1,29 @@
+import _ from "lodash";
+
+import { Rect } from "../tools/math";
+
+/** Engine child */
+export class Child {
+  constructor(rect) {
+    this.rect = rect;
+  }
+
+  /**
+   * Render children to canvas
+   * @param ctx Canvas context
+   */
+  draw(ctx) {}
+
+  /**
+   * Event listener
+   * @param event Event Data
+   */
+  onEvent(event) {}
+
+  /** Update childs */
+  update() {}
+}
+
 /**
  * Array of elements
  */
@@ -12,7 +38,7 @@ export class Layer {
    * @returns {Layer}
    */
   add(child) {
-    child.parent = this;
+    child.layer = this;
     this.childs.push(child);
     return this;
   }
@@ -28,11 +54,11 @@ export class Layer {
 
   /**
    * Event listener
-   * @param data Event Data
+   * @param event Event
    */
-  onEvent(data) {
-    _(this.childs).each(child => {
-      child.onEvent(data);
+  onEvent(event) {
+    _.each(this.childs, child => {
+      child.onEvent(event);
     });
   }
 

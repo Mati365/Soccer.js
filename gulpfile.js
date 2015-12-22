@@ -2,22 +2,25 @@ var gulp = require("gulp")
   , gutil = require("gulp-util")
   , browserify = require("browserify")
   , babelify = require("babelify")
-  , fs = require("fs");
+  , source = require('vinyl-source-stream');
 
 gulp
   /** Build sources to bundle */
   .task("es6", function() {
-    browserify({})
+    browserify({
+        entries: "src/main.js"
+      , extensions: [".js"]
+    })
       .transform(babelify, { presets: ["es2015"] })
-      .require("src/main.js", { entry: true })
       .bundle()
       .on("error", gutil.log)
-      .pipe(fs.createWriteStream("dist/app.min.js"));
+      .pipe(source("app.min.js"))
+      .pipe(gulp.dest("dist"));
   })
 
   /** Watch all source files in directory */
   .task("watch", function() {
-    gulp.watch("src/**/*.js", ["es6"]);
+    gulp.watch("src/**/*.js*", ["es6"]);
   })
 
   /** Default task */

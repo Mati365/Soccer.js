@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import Context from "./context";
-import Event from "./event";
+import Message from "./message";
 import Color from "../tools/color";
 import { Vec2 } from "../tools/math";
 
@@ -32,14 +32,27 @@ export default class Canvas {
 
   /** Create event listeners */
   _initListeners() {
+    let domInstance = $(this.context.domElement);
+
+    // Translate event from DOM system to engine, "click" to Mouse.Type.MOUSE_CLICK
+    domInstance.translateEvent = (eventName, eventCode, data) => {
+      return domInstance.on(eventName, () => {
+        this.broadcast(new Message(eventCode, this, data));
+      });
+    };
+
     let mousePos = new Vec2;
-    $(this.context.domElement).mousedown(e => {
-      mousePos.xy = [
-          e.clientX - this.context.size.x
-        , e.clientY - this.context.size.y
-      ];
-      console.log(mousePos.xy);
-    });
+    domInstance
+      /** MOUSE EVENT LISTENERS */
+      .mousemove(e => {
+        mousePos.xy = [
+            e.clientX - this.context.size.x
+          , e.clientY - this.context.size.y
+        ];
+      })
+      .translateEvent("click", Message.Type.MOUSE_CLICK, mousePos)
+      .translateEvent("mousedown", Message.Type.MOUSE_DOWN, mousePos)
+      .translateEvent("mouseup", Message.Type.MOUSE_UP, mousePos);
   }
 
   /**
@@ -51,9 +64,10 @@ export default class Canvas {
     if(currentState)
       this.states[this.activeState].onEvent(data);
     else
-      _(this.states).each(state => {
+      _.each(this.states, state => {
         state.onEvent(data);
       });
+    data.finalCallback && data.finalCallback();
   }
 
   /**
@@ -63,15 +77,16 @@ export default class Canvas {
    * @param setDefault  Set state default
    */
   state(name, state, setDefault=false) {
-    if(name in this.states)
-      throw new Error("Application state already exists!");
+    assert(name in this.states, "Application state already exists!");
 
     // Set state and init
     this.states[name] = state;
     if(setDefault)
       this.activeState = name;
-    state.init();
 
+    // Add parent
+    state.canvas = this;
+    state.init();
     return this;
   }
 
@@ -87,17 +102,23 @@ export default class Canvas {
       this.ctx.fillStyle = this.background.css;
       this.ctx.fillRect(0, 0, this.context.size.w, this.context.size.h);
 
-      let state = this.states[this.activeState];
-      if(state) {
-        // Fixed step update
-        if(delta >= frameTime) {
-          delta -= frameTime;
-          state.update();
-        }
+      // Stop exec until something is loaded
+      if(this.context.currentLoading) {
+        console.log("Loading...");
 
-        // Calculate delta
-        delta += -lastFrame + (lastFrame = Date.now());
-        state.draw(this.ctx);
+      } else {
+        let state = this.states[this.activeState];
+        if(state) {
+          // Fixed step update
+          if(delta >= frameTime) {
+            delta -= frameTime;
+            state.update();
+          }
+
+          // Calculate delta
+          delta += -lastFrame + (lastFrame = Date.now());
+          state.draw(this.ctx);
+        }
       }
 
       // Request new frame

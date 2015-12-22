@@ -1,15 +1,7 @@
 /**
- * Event type
- */
-export const Type = {
-    MOUSE_CLICK: 1
-  , KEY_ENTER:   2
-};
-
-/**
  * Event Data
  */
-export class Data {
+export default class Message {
   /**
    * @param type          Action Type
    * @param creator       Creator
@@ -26,7 +18,20 @@ export class Data {
   /**
    * Prevent finalCallback executing
    */
-  preventDefault() {
-    this.finalCallback = null;
-  }
+  preventDefault() { this.finalCallback = null; }
 }
+
+/**
+ * Event type
+ */
+Message.Type = {
+  // Mouse events
+    MOUSE_DOWN:   1
+  , MOUSE_UP:     2
+  , MOUSE_CLICK:  3
+
+  // Keyboard Events
+  , KEY_DOWN:     4
+  , KEY_UP:       8
+  , KEY_ENTER:    12
+};
