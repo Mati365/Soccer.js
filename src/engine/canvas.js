@@ -17,7 +17,7 @@ export default class Canvas {
       : context;
 
     // Background color
-    this.background = Color.hexColor(Color.Hex.BLACK);
+    this.background = Color.parseHex(Color.Hex.BLACK);
 
     // Application state e.g. game, menu
     this.states = {};
@@ -117,7 +117,7 @@ export default class Canvas {
 
           // Calculate delta
           delta += -lastFrame + (lastFrame = Date.now());
-          state.draw(this.ctx);
+          state.draw(this.context);
         }
       }
 

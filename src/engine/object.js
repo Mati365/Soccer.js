@@ -29,7 +29,9 @@ export class Child {
  */
 export class Layer {
   constructor() {
-    this.childs = [];
+    this.children = [];
+    this.layout = null;
+    this.focus = null;
   }
 
   /**
@@ -39,17 +41,19 @@ export class Layer {
    */
   add(child) {
     child.layer = this;
-    this.childs.push(child);
+
+    this.layout && this.layout(this.children, child);
+    this.children.push(child);
     return this;
   }
 
   /**
    * Render children to canvas
-   * @param ctx Canvas context
+   * @param context Canvas context
    */
-  draw(ctx) {
-    for(let i = 0;i < this.childs.length;++i)
-      this.childs[i].draw(ctx);
+  draw(context) {
+    for(let i = 0;i < this.children.length;++i)
+      this.children[i].draw(context);
   }
 
   /**
@@ -57,15 +61,16 @@ export class Layer {
    * @param event Event
    */
   onEvent(event) {
-    _.each(this.childs, child => {
-      child.onEvent(event);
-    });
+    if(!this.focus || !this.focus.onEvent(event))
+      _.each(this.children, child => {
+        child.onEvent(event);
+      });
   }
 
   /** Update childs */
   update() {
-    for(let i = 0;i < this.childs.length;++i)
-      this.childs[i].update && this.childs[i].update();
+    for(let i = 0;i < this.children.length;++i)
+      this.children[i].update && this.children[i].update();
   }
 }
 
