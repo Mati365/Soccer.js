@@ -2,6 +2,16 @@ Soccer.js
 ==============
 open source HaxBall clone written in ES6
 
+## Installing
+In cloned folder:
+```
+sudo npm install
+```
+and
+```
+gulp es6
+```
+
 ## License
 ```
 The MIT License (MIT)
