@@ -57,7 +57,7 @@ export class Layer extends Child {
 
     // If layout is present use it to organise position
     if(this.layout) {
-      child.rect.xy = this.children.length
+      child.rect.xy = this.children.length || !_.isEmpty(opts)
         ? this.layout(child, _.last(this.children), opts)
         : [0, 0];
     }
@@ -113,7 +113,10 @@ Layer.VBox = function(child, prev) { return prev.rect.clone().add(new Vec2(0, pr
 
 /** Border box */
 Layer.BorderBox = function(child, previous, opts) {
-  console.log(opts, this.rect.w - child.rect.w);
+  return [
+      Math.max(0, Math.min(this.rect.w * opts.align.x - child.rect.w / 2, this.rect.w - child.rect.w))
+    , Math.max(0, Math.min(this.rect.h * opts.align.y - child.rect.h / 2, this.rect.h - child.rect.h))
+  ];
 };
 
 /**
