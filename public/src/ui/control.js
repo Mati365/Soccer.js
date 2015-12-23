@@ -26,14 +26,8 @@ export default class Control extends Child {
    */
   onEvent(event) {
     // TODO: Add more event types
-    switch(event.type) {
-      case Message.Type.MOUSE_CLICK:
-      case Message.Type.MOUSE_DOWN:
-      case Message.Type.MOUSE_UP:
-        if(!this.rect.contains(event.data))
-          return false;
-        break;
-    }
+    if(event.isMouseEvent() && !this.rect.contains(event.data))
+      return false;
 
     // Assign state and call callback
     this.state = event.type;

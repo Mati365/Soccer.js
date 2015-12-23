@@ -3,4 +3,4 @@
 *.log
 !.gitignore
 node_modules/
-dist/
+public/dist/

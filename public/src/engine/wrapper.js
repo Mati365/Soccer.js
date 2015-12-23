@@ -1,7 +1,10 @@
 import { Vec2, Rect } from "../tools/math";
 import { Child } from "../engine/object";
 
-export default class Sprite extends Child {
+/**
+ * Simple sprite renderer
+ */
+export class Sprite extends Child {
   /**
    * @param rect        Rect coordinates
    * @param resourceId  Context's resource ID
@@ -41,5 +44,35 @@ export default class Sprite extends Child {
       , this.rect.w /** IMG W */
       , this.rect.h /** IMG H */
     );
+  }
+}
+
+export class Text extends Child {
+  /**
+   * @param rect  Rect coordinates
+   * @param text  Text to render
+   * @param color Text color
+   */
+  constructor(rect, text, color) {
+    super(rect);
+    this.text = text;
+    this.color = color;
+    this.size = size;
+  }
+
+  /** Get text width in pixels */
+  get width() {
+    return this.layer.canvas.context.textWidth(this.text);
+  }
+
+  /**
+   * Render text
+   * @param context   Canvas context object
+   */
+  draw(context) {
+    context
+      .fillWith(this.color)
+      .setFontSize(fontSize)
+      .drawText(this.text, this.rect);
   }
 }

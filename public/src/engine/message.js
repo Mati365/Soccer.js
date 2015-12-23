@@ -19,6 +19,11 @@ export default class Message {
    * Prevent finalCallback executing
    */
   preventDefault() { this.finalCallback = null; }
+
+  /** Check is mouse event */
+  isMouseEvent() {
+    return this.type >= Message.Type.MOUSE_DOWN && this.type <= Message.Type.MOUSE_CLICK;
+  }
 }
 
 /**

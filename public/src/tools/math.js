@@ -12,6 +12,9 @@ export class Vec2 {
     this.sub = _.partial(this.add, _, -1.0);
   }
 
+  /** Make clone of object */
+  clone() { return new Vec2(this.x, this.y); }
+
   /** Getters/Setters */
   set xy(xy) {
     this.x = xy[0];
@@ -94,6 +97,9 @@ export class Rect extends Vec2 {
     this.w = w;
     this.h = h;
   }
+
+  /** Make clone of object */
+  clone() { return new Rect(this.x, this.y, this.w, this.h ); }
 
   /**
    * Compare rectangles
