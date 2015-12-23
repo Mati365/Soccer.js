@@ -1,4 +1,4 @@
-HaxJS-client
+Soccer.js
 ==============
 open source HaxBall clone written in ES6
 
