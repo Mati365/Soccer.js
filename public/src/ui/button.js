@@ -1,8 +1,8 @@
+import { Vec2 } from "../tools/math";
 import Control from "./control";
 import Schema from "./schema";
 import Message from "../engine/message";
 import Color from "../tools/color";
-import { Vec2 } from "../tools/math";
 
 /** Button */
 export class Button extends Control {
@@ -39,12 +39,45 @@ export class Button extends Control {
       .setFontSize(fontSize)
       .drawText(this.text, new Vec2(
           this.rect.x + this.rect.w / 2 - context.textWidth(this.text) / 2
-        , this.rect.y + (this.rect.h - fontSize) / 2 + fontSize
+        , this.rect.y + this.rect.h / 2 + fontSize / 2
       ));
   }
 }
 
 /** Radiobutton */
-export class Radio extends Control {
+export class Radio extends Button {
+  /**
+   * Forward event to callbacks
+   * @param event  Event
+   */
+  onEvent(event) {
+    if(this._checkMouseEvent(event) && event.type === Message.Type.MOUSE_CLICK)
+      this.checked = !this.checked;
+    return super.onEvent(event);
+  }
 
+  /**
+   * Draw radio
+   * @param context Canvas context
+   */
+  draw(context) {
+    // Radiobutton color
+    context.fillWith(Color.Hex.WHITE);
+
+    // Filled in when checked
+    if(this.checked) {
+      context.fillRect(this.rect.clone().borderReduce(3));
+    }
+
+    // Border and text
+    context
+      .strokeWith(Color.Hex.WHITE)
+      .strokeRect(this.rect)
+
+      .setFontSize(this.rect.h)
+      .drawText(this.text, new Vec2(
+          this.rect.x + this.rect.w + 10
+        , this.rect.y + this.rect.h
+      ));
+  }
 }

@@ -4,8 +4,10 @@ import Message from "../engine/message";
 export default class Control extends Child {
   constructor(rect) {
     super(rect);
+
     this.forwarder = {};
     this.state = null;
+    this.disabled = false;
   }
 
   /**
@@ -21,12 +23,21 @@ export default class Control extends Child {
   }
 
   /**
+   * Check is mouse hover
+   * @param event Event
+   * @private
+   */
+  _checkMouseEvent(event) {
+    return !event.isMouseEvent() || this.rect.contains(event.data);
+  }
+
+  /**
    * Forward event to callbacks
    * @param event  Event
    */
   onEvent(event) {
     // TODO: Add more event types
-    if(event.isMouseEvent() && !this.rect.contains(event.data))
+    if(!this._checkMouseEvent(event))
       return false;
 
     // Assign state and call callback
@@ -34,7 +45,6 @@ export default class Control extends Child {
     this.layer.focus = this;
 
     let callback = this.forwarder[this.state];
-    if(callback)
-      callback(event);
+    callback && callback.bind(this)(event);
   }
 }

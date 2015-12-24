@@ -74,8 +74,9 @@ export class Layer extends Child {
     context.ctx.save();
     context.ctx.translate(this.rect.x, this.rect.y);
 
-    for(let i = 0;i < this.children.length;++i)
-      this.children[i].draw(context);
+    _.each(this.children, child => {
+      !child.disabled && child.draw(context);
+    });
 
     context.ctx.restore();
   }
@@ -94,16 +95,20 @@ export class Layer extends Child {
         , event.finalCallback
       );
 
-    if(!this.focus || !this.focus.onEvent(event))
-      _.each(this.children, child => {
-        child.onEvent(event);
+    // Cache focus index, faster than ==
+    if(!this.focus || !this.focus.onEvent(event)) {
+      let focusIndex = this.children.indexOf(this.focus);
+      _.each(this.children, (child, index) => {
+        !child.disabled && index != focusIndex && child.onEvent(event);
       });
+    }
   }
 
   /** Update childs */
   update() {
-    for(let i = 0;i < this.children.length;++i)
-      this.children[i].update && this.children[i].update();
+    _.each(this.children, child => {
+      !child.disabled && child.update && child.update();
+    });
   }
 }
 

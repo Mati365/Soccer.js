@@ -102,6 +102,16 @@ export class Rect extends Vec2 {
   clone() { return new Rect(this.x, this.y, this.w, this.h ); }
 
   /**
+   * Remove border
+   * @param border  Border size
+   */
+  borderReduce(border) {
+    this.x += border; this.y += border;
+    this.w -= 2 * border; this.h -= 2 * border;
+    return this;
+  }
+
+  /**
    * Compare rectangles
    * @param   rect Rectangle
    *

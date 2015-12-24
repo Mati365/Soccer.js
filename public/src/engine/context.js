@@ -109,6 +109,16 @@ export default class Context {
   }
 
   /**
+   * Set stroke color
+   * @param color Stroke color
+   * @returns {Context}
+   */
+  strokeWith(color) {
+    this.ctx.strokeStyle = color.css || color;
+    return this;
+  }
+
+  /**
    * Set fill color
    * @param color Fill color
    * @returns {Context}
@@ -132,6 +142,23 @@ export default class Context {
     );
     return this;
   }
+
+  /**
+   * Draw stroked rect
+   * @param rect  Rectangle
+   * @returns {Context}
+   */
+  strokeRect(rect) {
+    this.ctx.lineWidth = 2;
+    this.ctx.strokeRect(
+        rect.x
+      , rect.y
+      , rect.w
+      , rect.h
+    );
+    return this;
+  }
+
   /**
    * Loads resource, load only if required
    * @param id    Resource ID

@@ -104,7 +104,11 @@ export default class Canvas {
 
       // Stop exec until something is loaded
       if(this.context.currentLoading) {
-        console.log("Loading...");
+        let title = "Loading resources...";
+        this.context
+          .fillWith(Color.Hex.WHITE)
+          .setFontSize(32)
+          .drawText(title, new Vec2(this.context.size.w / 2 - this.context.textWidth(title) / 2, this.context.size.h / 2 - 6));
 
       } else {
         let state = this.states[this.activeState];
