@@ -22,7 +22,7 @@ export class Vec2 {
     return this;
   }
   get xy() {
-    return [this.x, this.y]
+    return [this.x, this.y];
   }
 
   /**
@@ -100,6 +100,16 @@ export class Rect extends Vec2 {
 
   /** Make clone of object */
   clone() { return new Rect(this.x, this.y, this.w, this.h ); }
+
+  /** Getters/Setters */
+  set wh(wh) {
+    this.w = wh[0];
+    this.h = wh[1];
+    return this;
+  }
+  get wh() {
+    return [this.w, this.h];
+  }
 
   /**
    * Remove border

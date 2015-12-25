@@ -95,7 +95,7 @@ export default class Context {
    * @returns {Context}
    */
   drawText(text, pos) {
-    this.ctx.fillText(text, pos.x, pos.y);
+    this.ctx.fillText(text, pos.x, pos.y + (pos.h || 0));
     return this;
   }
 

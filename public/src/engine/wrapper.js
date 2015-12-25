@@ -1,5 +1,6 @@
 import { Vec2, Rect } from "../tools/math";
 import { Child } from "../engine/object";
+import Color from "../tools/color";
 
 /**
  * Simple sprite renderer
@@ -53,11 +54,10 @@ export class Text extends Child {
    * @param text  Text to render
    * @param color Text color
    */
-  constructor(rect, text, color) {
+  constructor(rect, text, color=Color.Hex.WHITE) {
     super(rect);
     this.text = text;
     this.color = color;
-    this.size = size;
   }
 
   /** Get text width in pixels */
@@ -72,7 +72,7 @@ export class Text extends Child {
   draw(context) {
     context
       .fillWith(this.color)
-      .setFontSize(fontSize)
+      .setFontSize(this.rect.h)
       .drawText(this.text, this.rect);
   }
 }

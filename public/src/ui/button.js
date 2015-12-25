@@ -27,7 +27,7 @@ export class Button extends Control {
         : Schema.button.background
     );
 
-    // Draw border
+    // Draw background
     context
       .fillWith(fillColor)
       .fillRect(this.rect, Schema.button.background);
@@ -71,13 +71,13 @@ export class Radio extends Button {
 
     // Border and text
     context
-      .strokeWith(Color.Hex.WHITE)
+      .strokeWith(Color.Hex.DARK_GRAY)
       .strokeRect(this.rect)
 
       .setFontSize(this.rect.h)
       .drawText(this.text, new Vec2(
           this.rect.x + this.rect.w + 10
-        , this.rect.y + this.rect.h
+        , this.rect.y + this.rect.h * 0.85
       ));
   }
 }
