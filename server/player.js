@@ -1,6 +1,10 @@
 "use strict";
 const _ = require("lodash");
+const Room = require("./room");
 
+/**
+ * Player socket class
+ */
 class Player {
   constructor(socket) {
     this.socket = socket;
@@ -14,10 +18,29 @@ class Player {
   _initListener() {
     this.socket
       /** Authorize to server */
-      .on("setNick", (nick, fn) => { fn(this.setNick(nick) ? `Welcome ${nick}!` : false); })
+      .on("setNick", (nick, fn) => {
+        fn(this.setNick(nick) ? `Welcome ${nick}!` : false);
+      })
+
+      /** Create room on server */
+      .on("createRoom", data => { this.createRoom(data.name, data.password); })
+
+      /** List all rooms */
+      .on("listRooms", fn => { fn(Room.headers()); })
 
       /** Disconnect from server */
       .on("disconnect", _.partial(Player.remove, this));
+  }
+
+  /**
+   * Create room
+   * @param name      Name of room
+   * @param password  Password
+   */
+  createRoom(name, password) {
+    if(this.room)
+      return false;
+    return this.room = new Room(name, this, password || "");
   }
 
   /**
@@ -26,7 +49,7 @@ class Player {
    * @returns true if not exists
    */
   setNick(nick) {
-    if(Player.isNickAvailable(nick))
+    if(!Player.isNickAvailable(nick))
       return false;
     else
       return this.nick = nick;
