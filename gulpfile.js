@@ -10,6 +10,7 @@ gulp
     browserify({
         entries: "public/src/main.js"
       , extensions: [".js"]
+      , paths: ["./", "node_modules/", "public/src/"]
     })
       .transform(babelify, { presets: ["es2015"] })
       .bundle()

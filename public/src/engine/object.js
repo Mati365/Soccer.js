@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-import { Rect, Vec2 } from "../tools/math";
+import { Rect, Vec2 } from "shared/math";
 import Message from "./message";
 
 /**

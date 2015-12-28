@@ -1,8 +1,9 @@
-import { Vec2 } from "../tools/math";
+import { Vec2 } from "shared/math";
+import Color from "shared/color";
+
 import Control from "./control";
 import Schema from "./schema";
 import Message from "../engine/message";
-import Color from "../tools/color";
 
 /** Button */
 export class Button extends Control {

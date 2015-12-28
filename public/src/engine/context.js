@@ -1,7 +1,7 @@
 import _ from "lodash";
 import $ from "jquery";
 
-import { Rect } from "../tools/math";
+import { Rect } from "shared/math";
 
 /** Asseration */
 if(!window.assert)
@@ -149,13 +149,16 @@ export default class Context {
    * @returns {Context}
    */
   strokeRect(rect) {
-    this.ctx.lineWidth = 2;
+    this.ctx.save();
+    this.ctx.translate(.5, .5);
+    this.ctx.lineWidth = 1;
     this.ctx.strokeRect(
         rect.x
       , rect.y
       , rect.w
       , rect.h
     );
+    this.ctx.restore();
     return this;
   }
 

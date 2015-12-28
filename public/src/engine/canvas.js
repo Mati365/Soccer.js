@@ -1,10 +1,11 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import Color from "shared/color";
+import { Vec2 } from "shared/math";
+
 import Context from "./context";
 import Message from "./message";
-import Color from "../tools/color";
-import { Vec2 } from "../tools/math";
 
 /**
  * Main renderer class

@@ -1,9 +1,10 @@
 import _ from "lodash";
 
-import { Rect, Vec2 } from "../tools/math";
+import { Rect, Vec2 } from "shared/math";
+import Color from "shared/color";
+
 import { Layer } from "../engine/object";
 import Message from "../engine/message";
-import Color from "../tools/color";
 import { Button, Radio } from "./button";
 
 /**
@@ -31,7 +32,7 @@ export default class ListBox extends Layer {
   draw(context) {
     super.draw(context);
     context
-      .strokeWith(Color.Hex.DARK_GRAY)
+      .strokeWith(Color.Hex.WHITE)
       .strokeRect(this.rect);
   }
 

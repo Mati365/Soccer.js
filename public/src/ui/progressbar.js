@@ -1,5 +1,5 @@
-import { Rect } from "../tools/math";
-import Color from "../tools/color";
+import { Rect } from "shared/math";
+import Color from "shared/color";
 import Control from "./control";
 
 /** Button */

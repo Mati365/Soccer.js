@@ -1,6 +1,7 @@
-import { Vec2, Rect } from "../tools/math";
+import { Vec2, Rect } from "shared/math";
+import Color from "shared/color";
+
 import { Child } from "../engine/object";
-import Color from "../tools/color";
 
 /**
  * Simple sprite renderer

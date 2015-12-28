@@ -23,8 +23,11 @@
   },
   "homepage": "https://github.com/haxjs/haxjs-client#readme",
   "dependencies": {
+    "chalk": "^1.1.1",
     "jquery": "^2.1.4",
-    "lodash": "^3.10.1"
+    "lodash": "^3.10.1",
+    "socket.io": "^1.3.7",
+    "socket.io-client": "^1.3.7"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.3.13",

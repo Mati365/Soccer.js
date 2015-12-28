@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-import { Rect, Vec2 } from "./tools/math";
+import { Rect, Vec2 } from "shared/math";
 import Canvas from "./engine/canvas";
 
 import { State, Layer } from "./engine/object";
@@ -10,6 +10,7 @@ import Progressbar from "./ui/progressbar";
 
 import { Text, Sprite } from "./engine/wrapper";
 import Message from "./engine/message";
+import Client from "./multiplayer/client";
 
 (() => {
   let layer =  new State(Layer.VBox, new Rect(5, 5, 755, 355));
@@ -50,6 +51,8 @@ import Message from "./engine/message";
   layer
     .add(new Text(new Rect(0, 0, 100, 20), "Player list:", "#FF0000"))
     .add(vbox);
+
+  new Client();
 
   new Canvas()
     .state("main", layer, true)
