@@ -45,6 +45,9 @@ export class Layer extends Child {
     // Spacing between items in  layout
     this.spacing = 5;
     this.layout = layout;
+
+    // If false children wont receive any events
+    this.eventForwarding = true;
   }
 
   /**
@@ -137,7 +140,7 @@ export class Layer extends Child {
     }
 
     // Cache focus index, faster than ==
-    if(!this.focus || !this.focus.onEvent(event)) {
+    if(this.eventForwarding && (!this.focus || !this.focus.onEvent(event))) {
       let focusIndex = this.children.indexOf(this.focus);
       _.each(this.children, (child, index) => {
         !child.disabled && index != focusIndex && child.onEvent(event);

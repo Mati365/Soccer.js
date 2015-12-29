@@ -8,7 +8,7 @@ export default class Client {
           name: "kupa"
         , password: ""
       });
-      socket.emit("startRoom");
+      //socket.emit("startRoom");
     });
   }
 }

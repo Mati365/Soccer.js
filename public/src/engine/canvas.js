@@ -85,6 +85,10 @@ export default class Canvas {
     if(setDefault)
       this.activeState = name;
 
+    // Copy size of parent
+    if(!state.rect.w)
+      state.rect.wh = this.context.size.wh;
+
     // Add parent
     state.canvas = this;
     state.init();
