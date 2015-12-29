@@ -8,11 +8,7 @@ export default class Client {
           name: "kupa"
         , password: ""
       });
-      setTimeout(function() {
-        socket.emit("listRooms", data => {
-          console.log(data);
-        });
-      }, 200);
+      socket.emit("startRoom");
     });
   }
 }

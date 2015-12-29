@@ -162,8 +162,39 @@ class Rect extends Vec2 {
   }
 }
 
+/**
+ *
+ */
+class Circle extends Vec2 {
+  constructor(x, y, r) {
+    super(x, y);
+    this.r = r || .0;
+  }
+
+  /**
+   * Get distance between circles
+   * @param circle  Circle
+   * @returns {number}
+   */
+  distance(circle) {
+    let x = this.x - circle.x
+      , y = this.y - circle.y;
+    return Math.sqrt(x*x + y*y);
+  }
+
+  /**
+   * Returns true if circles intersects
+   * @param circle  Circle
+   * @returns {boolean}
+   */
+  intersect(circle) {
+    return this.distance(circle) < circle.r + this.r;
+  }
+}
+
 /** Export modules */
 module.exports = {
     Vec2: Vec2
   , Rect: Rect
+  , Circle: Circle
 };

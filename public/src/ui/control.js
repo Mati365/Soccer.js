@@ -17,7 +17,7 @@ export default class Control extends Child {
    * @returns {Control}
    */
   addForwarder(type, callback) {
-    assert(type in this.forwarder, "Forwarder is already registered!");
+    console.assert(!this.forwarder[type], "Forwarder is already registered!");
     this.forwarder[type] = callback;
     return this;
   }

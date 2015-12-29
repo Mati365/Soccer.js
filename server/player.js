@@ -1,6 +1,6 @@
 "use strict";
 const _ = require("lodash");
-const Room = require("./room");
+const { Room } = require("./room");
 
 /**
  * Player socket class
@@ -8,6 +8,8 @@ const Room = require("./room");
 class Player {
   constructor(socket) {
     this.socket = socket;
+    this.room = null;
+
     this._initListener();
   }
 
@@ -23,7 +25,14 @@ class Player {
       })
 
       /** Create room on server */
-      .on("createRoom", data => { this.createRoom(data.name, data.password); })
+      .on("createRoom", data => {
+        this.createRoom(data.name, data.password);
+      })
+
+      /** Start room physics */
+      .on("startRoom", () => {
+        this.room && this.room.start();
+      })
 
       /** List all rooms */
       .on("listRooms", fn => { fn(Room.headers()); })
@@ -73,7 +82,7 @@ class Player {
    * @param player
    */
   static remove(player) {
-    Player.list = _.without(Player.list, player);
+    _.remove(Player.list, player);
   }
 }
 

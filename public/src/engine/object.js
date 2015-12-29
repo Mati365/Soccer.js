@@ -68,8 +68,7 @@ export class Layer extends Child {
    * @returns {Layer}
    */
   remove(child) {
-    this.children = _.without(this.children, child);
-    return this._reloadLayout();
+    return _.remove(this.children, child) && this._reloadLayout();
   }
 
   /**

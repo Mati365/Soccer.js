@@ -78,7 +78,7 @@ export default class Canvas {
    * @param setDefault  Set state default
    */
   state(name, state, setDefault=false) {
-    assert(name in this.states, "Application state already exists!");
+    console.assert(!this.states[name], "Application state already exists!");
 
     // Set state and init
     this.states[name] = state;

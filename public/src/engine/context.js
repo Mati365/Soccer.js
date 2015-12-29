@@ -3,13 +3,6 @@ import $ from "jquery";
 
 import { Rect } from "shared/math";
 
-/** Asseration */
-if(!window.assert)
-  window.assert = function(condition, errTitle) {
-    if(condition)
-      throw Error(errTitle);
-  };
-
 /**
  * Resource loaders
  */

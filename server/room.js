@@ -2,11 +2,15 @@
 const md5 = require("blueimp-md5")
     , _ = require("lodash");
 
-const Math = require("../shared/math");
+const { Vec2, Circle } = require("../shared/math");
 
-class Team {
-  constructor(color) {
-    this.color = color;
+/**
+ * Room body
+ */
+class Body extends Circle {
+  constructor(x, y, r) {
+    super(x, y, r);
+    this.v = new Vec2;
   }
 }
 
@@ -18,6 +22,8 @@ class Room {
     this.name = name;
     this.admin = admin;
     this.password = md5(password);
+
+    this.ball = new Body(16, 16, 16);
     this.teams = {
       spectators: []
     };
@@ -26,12 +32,45 @@ class Room {
   }
 
   /**
-   * Change user team
-   * @param user      User
-   * @param teamName  Team name in this.teams, create if not exsists
+   * Update physics in loop
+   * @private
    */
-  changeTeam(user, teamName) {
+  _updatePhysics() {
+    this.cachedPlayers = _.chain(this.teams)
+      .omit("spectators")
+      .values()
+      .flatten()
+      .concat(this.ball)
+      .value();
+    console.log(this.cachedPlayers);
+  }
 
+  /**
+   * Start/stop room loop
+   */
+  start() {
+    this.physicsInterval = setInterval(this._updatePhysics.bind(this), 1000 / 30);
+  }
+  stop() {
+    clearInterval(this.physicsInterval);
+  }
+
+  /**
+   * Set player team
+   * @param player    player
+   * @param newTeam   New team
+   * @returns {Room}
+   */
+  setTeam(player, newTeam) {
+    console.assert(this.teams[newTeam], `Team ${newTeam} not exists!`);
+
+    // Remove from old team
+    player.team && _.remove(player.team, player);
+
+    // Add to new team
+    player.team = this.teams[newTeam];
+    player.team.push(player);
+    return this;
   }
 
   /**
@@ -41,6 +80,8 @@ class Room {
    */
   join(player) {
     player.socket.join(this.name);
+    player.room = this;
+
     this.teams.spectators.push(player);
     return this;
   }
@@ -60,4 +101,8 @@ class Room {
   }
 }
 
-module.exports = Room;
+/** Export modules */
+module.exports = {
+    Body: Body
+  , Room: Room
+};
