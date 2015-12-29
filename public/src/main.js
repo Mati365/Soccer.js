@@ -35,7 +35,7 @@ import Client from "./multiplayer/client";
     .add(new ListBox.Item("User1"))
     .add(new ListBox.Item("User2"))
     .add(new ListBox.Item("User3"))
-    .add(new ListBox.Item("User4"));
+    .add(new ListBox.Item("User45"));
 
   let toolbar = new Layer(Layer.VBox, new Rect(0, 0, 60, 0));
   toolbar

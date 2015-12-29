@@ -1,12 +1,13 @@
-import _ from "lodash";
+"use strict";
+const _ = require("lodash");
 
 /**
  * Simple 2D Vector class
  */
-export class Vec2 {
-  constructor(x=0.0, y=0.0) {
-    this.x = x;
-    this.y = y;
+class Vec2 {
+  constructor(x, y) {
+    this.x = x || .0;
+    this.y = y || .0;
 
     /** Bind method */
     this.sub = _.partial(this.add, _, -1.0);
@@ -30,7 +31,8 @@ export class Vec2 {
    * @param vec     Vector to add
    * @param mul=1.0 Direction
    */
-  add(vec, mul=1.0) {
+  add(vec, mul) {
+    mul = mul || 1.0;
     this.x += vec.x * mul;
     this.y += vec.y * mul;
     return this;
@@ -90,12 +92,12 @@ export class Vec2 {
 /**
  * Simple 2D Rectangle class
  */
-export class Rect extends Vec2 {
-  constructor(x=0.0, y=0.0, w=0.0, h=0.0) {
+class Rect extends Vec2 {
+  constructor(x, y, w, h) {
     super(x, y);
 
-    this.w = w;
-    this.h = h;
+    this.w = w || .0;
+    this.h = h || .0;
   }
 
   /** Make clone of object */
@@ -159,3 +161,9 @@ export class Rect extends Vec2 {
       && rect.y + (rect.h || 0) <= this.y + this.h;
   }
 }
+
+/** Export modules */
+module.exports = {
+    Vec2: Vec2
+  , Rect: Rect
+};

@@ -1,12 +1,14 @@
+"use strict";
+
 /**
  * Color class
  */
-export default class Color {
-  constructor(r, g, b, a=1.0) {
+class Color {
+  constructor(r, g, b, a) {
     this.r = r;
     this.g = g;
     this.b = b;
-    this.a = a;
+    this.a = a || 1.0;
   }
 
   /** Get CSS value */
@@ -32,7 +34,8 @@ export default class Color {
    * @param scale Mixing scale
    * @returns {Color}
    */
-  mix(color, scale=1.0) {
+  mix(color, scale) {
+    scale = scale || 1.0;
     this.r = (this.r + color.r * scale) / 2.0;
     this.g = (this.g + color.g * scale) / 2.0;
     this.b = (this.b + color.b * scale) / 2.0;
@@ -63,3 +66,6 @@ Color.Hex = {
   , BLUE: "#0000FF"
   , DARK_GRAY: "#171717"
 };
+
+/** Export module */
+module.exports = Color;

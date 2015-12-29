@@ -21,7 +21,7 @@ gulp
 
   /** Watch all source files in directory */
   .task("watch", function() {
-    gulp.watch("public/src/**/*.js*", ["es6"]);
+    gulp.watch(["public/src/**/*.js", "shared/**/*.js"], ["es6"]);
   })
 
   /** Default task */
