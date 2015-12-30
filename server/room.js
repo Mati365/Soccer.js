@@ -96,6 +96,8 @@ class Room {
           name: room.name
         , admin: room.admin.nick
         , password: this.password === ""
+        , players: _.flatten(this.player).length
+        , maxPlayers: 16
       };
     });
   }

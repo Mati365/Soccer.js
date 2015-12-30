@@ -43,7 +43,7 @@ export default class ListBox extends Layer {
    * @param opts  Opts
    */
   add(child, opts) {
-    return super.add(child, opts || { fill: new Vec2(1.0, 0.0) });
+    return super.add(child, opts || { fill: [1.0, .0] });
   }
 }
 
@@ -110,13 +110,5 @@ ListBox.Row = class extends Layer {
     // Check if one is selected, if yes select all
     if(super.onEvent(event) !== false)
       this.checked = !this.checked;
-  }
-
-  /**
-   * Draw listbox item
-   * @param context Canvas context
-   */
-  draw(context) {
-    super.draw(context);
   }
 };

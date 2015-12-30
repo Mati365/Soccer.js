@@ -75,10 +75,20 @@ export class Layer extends Child {
   }
 
   /**
+   * Remove all childrens
+   * @returns {Layer}
+   */
+  clear() {
+    this.children = [];
+    this._reloadLayout();
+    return this;
+  }
+
+  /**
    * Add child to layer
    * @param child Child
    * @param opts  Layout options
-   * @returns {Layer}
+   * @returns {Child}
    */
   add(child, opts) {
     child.layer = this;
@@ -88,8 +98,8 @@ export class Layer extends Child {
       // Resize to rect width
       if(opts && opts.fill) {
         child.rect.wh = [
-            (this.rect.w * opts.fill.x) || child.rect.w
-          , (this.rect.h * opts.fill.y) || child.rect.h
+            ((this.rect.w * opts.fill[0]) || child.rect.w) - this.spacing * 2
+          , ((this.rect.h * opts.fill[1]) || child.rect.h) - this.spacing * 2
         ];
         opts = _.omit(opts, "fill");
       }
@@ -97,11 +107,11 @@ export class Layer extends Child {
       // Use layout placement
       child.rect.xy = this.children.length || !_.isEmpty(opts)
         ? this.layout(child, _.last(this.children), opts)
-        : [0, 0];
+        : [this.spacing, this.spacing];
     }
 
     this.children.push(child);
-    return this;
+    return child;
   }
 
   /**
@@ -157,14 +167,14 @@ export class Layer extends Child {
 }
 
 /** Horizontal/Vertical box */
-Layer.HBox = function(child, prev) { return prev.rect.clone().add(new Vec2(prev.rect.w + this.spacing, 0)).xy; };
-Layer.VBox = function(child, prev) { return prev.rect.clone().add(new Vec2(0, prev.rect.h + this.spacing)).xy; };
+Layer.HBox = function(child, prev) { return prev.rect.clone().add(new Vec2(prev.rect.w, 0)).xy; };
+Layer.VBox = function(child, prev) { return prev.rect.clone().add(new Vec2(0, prev.rect.h)).xy; };
 
 /** Border box */
 Layer.BorderBox = function(child, prev, opts) {
   return [
-      Math.max(0, Math.min(this.rect.w * opts.align.x - child.rect.w / 2, this.rect.w - child.rect.w))
-    , Math.max(0, Math.min(this.rect.h * opts.align.y - child.rect.h / 2, this.rect.h - child.rect.h))
+      Math.max(0, Math.min(this.rect.w * opts.align[0] - child.rect.w / 2, this.rect.w - child.rect.w))
+    , Math.max(0, Math.min(this.rect.h * opts.align[1] - child.rect.h / 2, this.rect.h - child.rect.h))
   ];
 };
 

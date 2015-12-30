@@ -35,7 +35,9 @@ class Player {
       })
 
       /** List all rooms */
-      .on("listRooms", fn => { fn(Room.headers()); })
+      .on("listRooms", (data, fn) => {
+        fn(Room.headers());
+      })
 
       /** Disconnect from server */
       .on("disconnect", _.partial(Player.remove, this));
