@@ -4,9 +4,11 @@ import { Rect, Vec2 } from "shared/math";
 import Color from "shared/color";
 
 import { Layer } from "../engine/object";
-import Message from "../engine/message";
 import { Button, Radio } from "./button";
+import ScrollBar from "../ui/scrollbar";
+
 import Text from "../engine/wrapper";
+import Message from "../engine/message";
 
 /**
  * ListBox control
@@ -14,8 +16,37 @@ import Text from "../engine/wrapper";
 export default class ListBox extends Layer {
   constructor(rect) {
     super(Layer.VBox, rect);
-
     this.spacing = 0;
+  }
+
+  /**
+   * Initialize layer
+   */
+  init()  {
+    this.scrollbar = new ScrollBar(new Rect(this.rect.x + this.rect.w - 12, this.rect.y, 12, this.rect.h));
+    this.scrollbar.addForwarder(Message.Type.MOUSE_DRAG, () => {
+      this.setVisibleIndex(this.scrollbar.position, this.scrollbar.visible);
+    });
+  }
+
+  /**
+   * Set visible item index
+   * @param start   Start index
+   * @param visible Visible count
+   */
+  setVisibleIndex(start, visible) {
+    let pos = 0;
+    _.each(this.children, (child, index) => {
+      if(index < start || index >= start + visible)
+        child.disabled = true;
+      else {
+        child.disabled = false;
+
+        // Update position
+        child.rect.y = pos;
+        pos += child.rect.h;
+      }
+    });
   }
 
   /**
@@ -27,11 +58,14 @@ export default class ListBox extends Layer {
   }
 
   /**
-   * Draw listbox
+   * Draw list
    * @param context Canvas context
    */
   draw(context) {
     super.draw(context);
+
+    // Border
+    this.scrollbar.draw(context);
     context
       .strokeWith(Color.Hex.WHITE)
       .strokeRect(this.rect);
@@ -43,7 +77,25 @@ export default class ListBox extends Layer {
    * @param opts  Opts
    */
   add(child, opts) {
-    return super.add(child, opts || { fill: [1.0, .0] });
+    super.add(child, opts || { fill: [1.0, .0] });
+
+    // Manage scrollbar
+    this.scrollbar.setTotal(this.children.length);
+    this.scrollbar.visible = Math.floor(this.rect.h / child.rect.h);
+
+    // Overflow is hidden
+    if(this.rect.h <= child.rect.y + child.rect.h)
+      child.disabled = true;
+    return child;
+  }
+
+  /**
+   * Receive event
+   * @param event Event
+   */
+  onEvent(event) {
+    if(this.scrollbar.onEvent(event) === false)
+      super.onEvent(event);
   }
 }
 
@@ -108,7 +160,7 @@ ListBox.Row = class extends Layer {
    */
   onEvent(event) {
     // Check if one is selected, if yes select all
-    if(super.onEvent(event) !== false)
+    if(event.type === Message.Type.MOUSE_CLICK && super.onEvent(event) !== false)
       this.checked = !this.checked;
   }
 };

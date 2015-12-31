@@ -1,9 +1,10 @@
 import { Rect } from "shared/math";
+
 import Color from "shared/color";
 import Control from "./control";
 
-/** Button */
-export default class Progressbar extends Control {
+/** ProgressBar */
+export default class ProgressBar extends Control {
   /**
    * @param rect        Rectangle dimensions
    * @param percentage  Percentage

@@ -1,18 +1,28 @@
 import _ from "lodash";
 
-import { Vec2, Rect } from "shared/math";
-import { Layer, State } from "../engine/object";
-import ListBox from "../ui/listbox";
-import { Button } from "../ui/button";
-import Client from "../multiplayer/client";
-import Message from "../engine/message";
-import { Text } from "../engine/wrapper";
+import { State, Layer } from "../engine/object";
+import { Rect } from "shared/math";
 
+import Table from "../ui/table";
+import { Button } from "../ui/button";
+
+import Message from "../engine/message";
+import Client from "../multiplayer/client";
+
+/**
+ * List of rooms
+ */
 export default class RoomList extends State {
   constructor() {
     super(Layer.VBox);
+    this.table = new Table([
+        ["Name", .5]
+      , ["Admin", .2]
+      , ["Pass", .1]
+      , ["Total", .1]
+      , ["Max", .1]
+    ]);
 
-    this.listBox = new ListBox(new Rect);
     this._reloadRoomList();
   }
 
@@ -23,16 +33,13 @@ export default class RoomList extends State {
   _reloadRoomList() {
     let reloadList = list => {
       // Remove old data
-      this.listBox.clear();
+      this.table.clear();
 
       // Add each row to listBox
-      _.each(list, data => {
-        let rowLayer = this.listBox.add(new ListBox.Row);
-        // Add each column to row
-        _.each(data, column => {
-          rowLayer.add(new ListBox.Item(column), { fill: [.2, .0] });
+      for(let i = 0;i < 90;++i)
+        _.each(list, data => {
+          this.table.add(_.values(data));
         });
-      });
     };
     Client.emit("listRooms")
       .then(reloadList)
@@ -43,14 +50,8 @@ export default class RoomList extends State {
    * Initialize state
    */
   init() {
-    // Headers
-    let header = this.add(new Layer(Layer.HBox, new Rect), { fill: [1.0, .1]});
-    _.each(["Name", "Admin", "Password", "Players", "Max"], title => {
-      header.add(new Text(title, new Rect), { fill: [.2, 1.0] });
-    });
-
     // List of channels
-    this.add(this.listBox, { fill: [1.0, .8] });
+    this.add(this.table, { fill: [1.0, .9] });
 
     // List methods
     let toolbar = this.add(new Layer(Layer.HBox, new Rect), { fill: [1.0, .1] });

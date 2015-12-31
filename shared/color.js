@@ -64,7 +64,8 @@ Color.Hex = {
   , RED: "#FF0000"
   , GREEN: "#00FF00"
   , BLUE: "#0000FF"
-  , DARK_GRAY: "#171717"
+  , DARK_GRAY: "#0f0f0f"
+  , LIGHT_GRAY: "#e8e8e8"
 };
 
 /** Export module */

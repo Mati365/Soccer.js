@@ -72,6 +72,20 @@ export default class Context {
   }
 
   /**
+   * Draw line from p1 to p2
+   * @param p1  Begin
+   * @param p2  End
+   * @returns {Context}
+   */
+  strokeLine(p1, p2) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(p1.x, p1.y);
+    this.ctx.lineTo(p2.x, p2.y);
+    this.ctx.stroke();
+    return this;
+  }
+
+  /**
    * Set font size
    * @param size  Font size
    * @returns {Context}

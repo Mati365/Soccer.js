@@ -28,7 +28,42 @@ class Room {
       spectators: []
     };
 
-    (Room.list = Room.List || []).push(this);
+    (Room.list = Room.list || []).push(this);
+  }
+
+  /**
+   * Kick player from room
+   * @param player  Player
+   * @returns {Room}
+   */
+  kick(player) {
+    player.socket
+      .emit("kickFromRoom", "You are kicked!")
+      .leave(this.name);
+    player.room = null;
+    return this;
+  }
+
+  /**
+   * Get list of all players from all teams
+   * @param omit  Omit team name
+   * @returns Players
+   */
+  connected(omit) {
+    return _.chain(this.teams)
+      .omit(omit)
+      .values()
+      .flatten()
+      .value();
+  }
+
+  /**
+   * Destroy room
+   */
+  destroy() {
+    _.each(this.connected(), this.kick.bind(this));
+    _.remove(Room.list, this);
+    return this;
   }
 
   /**
@@ -36,12 +71,7 @@ class Room {
    * @private
    */
   _updatePhysics() {
-    this.cachedPlayers = _.chain(this.teams)
-      .omit("spectators")
-      .values()
-      .flatten()
-      .concat(this.ball)
-      .value();
+    this.cachedPlayers = this.connected("spectators");
     console.log(this.cachedPlayers);
   }
 

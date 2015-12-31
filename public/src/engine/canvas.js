@@ -36,10 +36,16 @@ export default class Canvas {
     let domInstance = $(this.context.domElement);
 
     // Translate event from DOM system to engine, "click" to Mouse.Type.MOUSE_CLICK
+    let mousePressed = false;
     domInstance.translateEvent = (eventName, eventCode, data) => {
-      return domInstance.on(eventName, () => {
+      let handler = () => {
+        switch(eventCode) {
+          case Message.Type.MOUSE_DOWN: mousePressed = true; break;
+          case Message.Type.MOUSE_UP: mousePressed = false; break;
+        }
         this.broadcast(new Message(eventCode, this, data));
-      });
+      };
+      return domInstance.on(eventName, handler);
     };
 
     let mousePos = new Vec2;
@@ -50,6 +56,8 @@ export default class Canvas {
             e.clientX - this.context.size.x
           , e.clientY - this.context.size.y
         ];
+        if(mousePressed)
+          this.broadcast(new Message(Message.Type.MOUSE_DRAG, this, mousePos));
       })
       .translateEvent("click", Message.Type.MOUSE_CLICK, mousePos)
       .translateEvent("mousedown", Message.Type.MOUSE_DOWN, mousePos)

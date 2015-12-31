@@ -1,7 +1,8 @@
+import _ from "lodash";
 import io from "socket.io-client";
 
 var socket = io.connect("ws://localhost:3000");
-socket.emit("setNick", "kupsztal", () => {});
+socket.emit("setNick", "kupsztal" + _.random(0, 9999), () => {});
 
 export default {
     socket: socket

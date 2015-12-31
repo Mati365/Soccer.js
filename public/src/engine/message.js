@@ -33,10 +33,11 @@ Message.Type = {
   // Mouse events
     MOUSE_DOWN:   1
   , MOUSE_UP:     2
-  , MOUSE_CLICK:  3
+  , MOUSE_DRAG:   3
+  , MOUSE_CLICK:  4
 
   // Keyboard Events
-  , KEY_DOWN:     4
-  , KEY_UP:       8
-  , KEY_ENTER:    12
+  , KEY_DOWN:     5
+  , KEY_UP:       6
+  , KEY_ENTER:    7
 };

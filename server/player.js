@@ -84,6 +84,8 @@ class Player {
    * @param player
    */
   static remove(player) {
+    if(player.room && player.room.admin === player)
+      player.room.destroy();
     _.remove(Player.list, player);
   }
 }

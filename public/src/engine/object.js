@@ -110,6 +110,8 @@ export class Layer extends Child {
         : [this.spacing, this.spacing];
     }
 
+    // Init children
+    child.init && child.init();
     this.children.push(child);
     return child;
   }
@@ -167,8 +169,12 @@ export class Layer extends Child {
 }
 
 /** Horizontal/Vertical box */
-Layer.HBox = function(child, prev) { return prev.rect.clone().add(new Vec2(prev.rect.w, 0)).xy; };
-Layer.VBox = function(child, prev) { return prev.rect.clone().add(new Vec2(0, prev.rect.h)).xy; };
+Layer.HBox = function(child, prev) {
+  return prev.rect.clone().add(new Vec2(prev.rect.w + this.spacing, 0)).xy;
+};
+Layer.VBox = function(child, prev) {
+  return prev.rect.clone().add(new Vec2(0, prev.rect.h + this.spacing)).xy;
+};
 
 /** Border box */
 Layer.BorderBox = function(child, prev, opts) {

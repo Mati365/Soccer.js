@@ -42,7 +42,8 @@ export default class Control extends Child {
 
     // Assign state and call callback
     this.state = event.type;
-    this.layer.focus = this;
+    if(this.layer)
+      this.layer.focus = this;
 
     let callback = this.forwarder[this.state];
     callback && callback.bind(this)(event);
