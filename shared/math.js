@@ -155,10 +155,10 @@ class Rect extends Vec2 {
    * @return True if contains
    */
   contains(rect) {
-    return rect.x >= this.x
-      && rect.x + (rect.w || 0) <= this.x + this.w
-      && rect.y >= this.y
-      && rect.y + (rect.h || 0) <= this.y + this.h;
+    return rect.x > this.x
+      && rect.x + (rect.w || 0) < this.x + this.w
+      && rect.y > this.y
+      && rect.y + (rect.h || 0) < this.y + this.h;
   }
 }
 

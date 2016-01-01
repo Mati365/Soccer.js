@@ -48,6 +48,27 @@ export default class Canvas {
       return domInstance.on(eventName, handler);
     };
 
+    // On mouse scroll
+    let mouseScroll = e => {
+      // Custom event data
+      class ScrollAmount extends Vec2 {
+        constructor(x, y) {
+          super(x, y);
+          this.amount =  e.originalEvent.deltaY / Math.abs(e.originalEvent.deltaY);
+        }
+
+        clone() { return new ScrollAmount(this.x, this.y); }
+      }
+
+      // broadcast data
+      this.broadcast(new Message(
+          Message.Type.MOUSE_SCROLL
+        , this
+        , new ScrollAmount(mousePos.x, mousePos.y)
+      ));
+    };
+
+    // Cached mouse position
     let mousePos = new Vec2;
     domInstance
       /** MOUSE EVENT LISTENERS */
@@ -56,9 +77,12 @@ export default class Canvas {
             e.clientX - this.context.size.x
           , e.clientY - this.context.size.y
         ];
-        if(mousePressed)
-          this.broadcast(new Message(Message.Type.MOUSE_DRAG, this, mousePos));
+        mousePressed && this.broadcast(new Message(Message.Type.MOUSE_DRAG, this, mousePos));
       })
+
+      /** MOUSE SCROLL */
+      .on("mousewheel", mouseScroll)
+
       .translateEvent("click", Message.Type.MOUSE_CLICK, mousePos)
       .translateEvent("mousedown", Message.Type.MOUSE_DOWN, mousePos)
       .translateEvent("mouseup", Message.Type.MOUSE_UP, mousePos);

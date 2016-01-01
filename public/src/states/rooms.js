@@ -38,6 +38,7 @@ export default class RoomList extends State {
       // Add each row to listBox
       for(let i = 0;i < 90;++i)
         _.each(list, data => {
+          data.name = i;
           this.table.add(_.values(data));
         });
     };

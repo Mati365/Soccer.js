@@ -17,6 +17,7 @@ export default class ListBox extends Layer {
   constructor(rect) {
     super(Layer.VBox, rect);
     this.spacing = 0;
+    this.multiselect = false;
   }
 
   /**
@@ -58,6 +59,17 @@ export default class ListBox extends Layer {
   }
 
   /**
+   * Deselect all fields
+   * @returns {ListBox}
+   */
+  deselect() {
+    _.each(this.children, element => {
+      element.checked = false;
+    });
+    return this;
+  }
+
+  /**
    * Draw list
    * @param context Canvas context
    */
@@ -94,8 +106,14 @@ export default class ListBox extends Layer {
    * @param event Event
    */
   onEvent(event) {
-    if(this.scrollbar.onEvent(event) === false)
+    if(this.scrollbar.onEvent(event) === false && event.type === Message.Type.MOUSE_CLICK) {
+      // Deselect all
+      if(!this.multiselect && this.rect.contains(event.data))
+        this.deselect();
+
+      // Check is selected
       super.onEvent(event);
+    }
   }
 }
 
@@ -160,7 +178,7 @@ ListBox.Row = class extends Layer {
    */
   onEvent(event) {
     // Check if one is selected, if yes select all
-    if(event.type === Message.Type.MOUSE_CLICK && super.onEvent(event) !== false)
+    if(super.onEvent(event) !== false)
       this.checked = !this.checked;
   }
 };

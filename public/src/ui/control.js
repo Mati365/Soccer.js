@@ -32,6 +32,18 @@ export default class Control extends Child {
   }
 
   /**
+   * Send event to forwarder
+   * @param event Event
+   * @returns {Control}
+   * @private
+   */
+  _sendToForwarder(event) {
+    let callback = this.forwarder[event.type];
+    callback && callback.bind(this)(event);
+    return this;
+  }
+
+  /**
    * Forward event to callbacks
    * @param event  Event
    */
@@ -40,12 +52,12 @@ export default class Control extends Child {
     if(!this._checkMouseEvent(event))
       return false;
 
-    // Assign state and call callback
-    this.state = event.type;
+    // Set focus on object
     if(this.layer)
       this.layer.focus = this;
 
-    let callback = this.forwarder[this.state];
-    callback && callback.bind(this)(event);
+    // Assign state and call callback
+    this.state = event.type;
+    this._sendToForwarder(event);
   }
 }
