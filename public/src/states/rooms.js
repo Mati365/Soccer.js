@@ -5,6 +5,7 @@ import { Rect } from "shared/math";
 
 import Table from "../ui/table";
 import { Button } from "../ui/button";
+import Popup from "../ui/popup";
 
 import Message from "../engine/message";
 import Client from "../multiplayer/client";
@@ -51,6 +52,10 @@ export default class RoomList extends State {
    * Initialize state
    */
   init() {
+    let window = new Popup(null, new Rect(60, 60, 256, 256));
+    window.add(new Button(new Rect(90, 90, 90, 90), "Refresh"));
+    this.showPopup(window);
+
     // List of channels
     this.add(this.table, { fill: [1.0, .9] });
 

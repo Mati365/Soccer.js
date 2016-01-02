@@ -40,7 +40,7 @@ export class Layer extends Child {
 
     // Children stack
     this.children = [];
-    this.focus = null;
+    this.popup = null;
 
     // Spacing between items in  layout
     this.spacing = 5;
@@ -56,12 +56,22 @@ export class Layer extends Child {
    * @private
    */
   _reloadLayout() {
-    this.focus = null;
+    this.popup = null;
     if(this.layout) {
       _.each(this.children, (item, index) => {
         item.rect.xy = !index? [0, 0] : this.layout(item, this.children[index - 1]);
       });
     }
+    return this;
+  }
+
+  /**
+   * Set layer as popup object
+   * @param popup  Popup
+   * @returns {Layer}
+   */
+  showPopup(popup) {
+    this.popup = popup;
     return this;
   }
 
@@ -127,6 +137,12 @@ export class Layer extends Child {
     _.each(this.children, child => {
       !child.disabled && child.draw(context);
     });
+    if(this.popup) {
+      context
+        .fillWith("rgba(0, 0, 0, .75")
+        .fillRect(this.rect);
+      this.popup.draw(context);
+    }
 
     context.ctx.restore();
   }
@@ -151,20 +167,26 @@ export class Layer extends Child {
       );
     }
 
-    // Cache focus index, faster than ==
-    if(this.eventForwarding && (!this.focus || !this.focus.onEvent(event))) {
-      let focusIndex = this.children.indexOf(this.focus);
-      _.each(this.children, (child, index) => {
-        !child.disabled && index != focusIndex && child.onEvent(event);
+    // Popup receive event first
+    if(this.popup)
+      this.popup.onEvent(event);
+
+    // Children receive messages when forwarding is enabled
+    else if(this.eventForwarding) {
+      _.each(this.children, child => {
+        !child.disabled && child.onEvent(event);
       });
     }
   }
 
   /** Update childs */
   update() {
-    _.each(this.children, child => {
-      !child.disabled && child.update && child.update();
-    });
+    if(this.popup)
+      this.popup.update();
+    else
+      _.each(this.children, child => {
+        !child.disabled && child.update && child.update();
+      });
   }
 }
 

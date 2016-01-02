@@ -23,7 +23,7 @@ export class Button extends Control {
   draw(context) {
     // Button fill color
     let fillColor = Color.parseHex(
-      this.state === Message.Type.MOUSE_DOWN
+      this.state !== Message.Type.MOUSE_DOWN
         ? Color.Hex.WHITE
         : Schema.button.background
     );
@@ -36,11 +36,14 @@ export class Button extends Control {
     // Draw text
     let fontSize = this.rect.h * 0.9;
     context
+      .strokeWith(Color.Hex.WHITE)
+      .strokeRect(this.rect)
+
       .fillWith(fillColor.inverse())
       .setFontSize(fontSize)
       .drawText(this.text, new Vec2(
           this.rect.x + this.rect.w / 2 - context.textWidth(this.text) / 2
-        , this.rect.y + this.rect.h / 2 + fontSize / 2
+        , this.rect.y + this.rect.h / 2 + fontSize * .4
       ));
   }
 }
