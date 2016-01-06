@@ -11,7 +11,8 @@ import Text from "../engine/wrapper";
 import Message from "../engine/message";
 
 /**
- * ListBox control
+ * ListBo, layer with scrollbar that shows list box items in list
+ * @class
  */
 export default class ListBox extends Layer {
   constructor(rect) {
@@ -20,9 +21,7 @@ export default class ListBox extends Layer {
     this.multiselect = false;
   }
 
-  /**
-   * Initialize layer
-   */
+  /** @inheritdoc */
   init()  {
     this.scrollbar = new ScrollBar(new Rect(this.rect.x + this.rect.w - 12, this.rect.y, 12, this.rect.h));
     this.scrollbar.addForwarder(Message.Type.MOUSE_DRAG, () => {
@@ -69,10 +68,7 @@ export default class ListBox extends Layer {
     return this;
   }
 
-  /**
-   * Draw list
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     super.draw(context);
 
@@ -101,10 +97,7 @@ export default class ListBox extends Layer {
     return child;
   }
 
-  /**
-   * Receive event
-   * @param event Event
-   */
+  /** @inheritdoc */
   onEvent(event) {
     if(this.scrollbar.onEvent(event) === false && event.type === Message.Type.MOUSE_CLICK) {
       // Deselect all
@@ -125,10 +118,7 @@ ListBox.Item = class extends Radio {
     super(new Rect(0, 0, 0, 16), text);
   }
 
-  /**
-   * Draw listbox item
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     let fillColor = Color.parseHex(
       this.checked
@@ -172,10 +162,7 @@ ListBox.Row = class extends Layer {
     return _.every(this.children, { checked: true });
   }
 
-  /**
-   * Receive event
-   * @param event Event
-   */
+  /** @inheritdoc */
   onEvent(event) {
     // Check if one is selected, if yes select all
     if(super.onEvent(event) !== false)

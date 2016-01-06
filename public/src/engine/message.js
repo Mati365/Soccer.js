@@ -1,5 +1,6 @@
 /**
- * Event Data
+ * Contains type and data in message
+ * @class
  */
 export default class Message {
   /**
@@ -15,9 +16,7 @@ export default class Message {
     this.finalCallback = finalCallback;
   }
 
-  /**
-   * Prevent finalCallback executing
-   */
+  /** Prevent finalCallback executing */
   preventDefault() { this.finalCallback = null; }
 
   /** Check is mouse event */

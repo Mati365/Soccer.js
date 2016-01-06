@@ -9,6 +9,7 @@ import Message from "./message";
 
 /**
  * Main renderer class
+ * @class
  */
 export default class Canvas {
   constructor(context) {

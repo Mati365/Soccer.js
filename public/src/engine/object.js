@@ -67,11 +67,20 @@ export class Layer extends Child {
 
   /**
    * Set layer as popup object
-   * @param popup  Popup
+   * @param popup  Popup, null if close popup
    * @returns {Layer}
    */
   showPopup(popup) {
     this.popup = popup;
+
+    // Center popup on screen
+    if(this.popup) {
+      this.popup.layer = this;
+      this.popup.rect.xy = [
+          this.rect.w / 2 - this.popup.rect.w / 2
+        , this.rect.h / 2 - this.popup.rect.h / 2
+      ];
+    }
     return this;
   }
 
@@ -85,7 +94,7 @@ export class Layer extends Child {
   }
 
   /**
-   * Remove all childrens
+   * Remove all children
    * @returns {Layer}
    */
   clear() {
@@ -105,19 +114,24 @@ export class Layer extends Child {
 
     // If layout is present use it to organise position
     if(this.layout) {
-      // Resize to rect width
+      // Optional layout params
       if(opts && opts.fill) {
+        // Placement of child
         child.rect.wh = [
             ((this.rect.w * opts.fill[0]) || child.rect.w) - this.spacing * 2
           , ((this.rect.h * opts.fill[1]) || child.rect.h) - this.spacing * 2
         ];
-        opts = _.omit(opts, "fill");
       }
 
-      // Use layout placement
-      child.rect.xy = this.children.length || !_.isEmpty(opts)
-        ? this.layout(child, _.last(this.children), opts)
-        : [this.spacing, this.spacing];
+      // Remove optional opts
+      if(!opts || opts.useLayout !== false) {
+        opts = _.omit(opts, ["fill", "useLayout"]);
+
+        // Use layout placement
+        child.rect.xy = this.children.length || !_.isEmpty(opts)
+          ? this.layout(child, _.last(this.children), opts)
+          : [this.spacing, this.spacing];
+      }
     }
 
     // Init children
@@ -126,10 +140,7 @@ export class Layer extends Child {
     return child;
   }
 
-  /**
-   * Render children to canvas
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     context.ctx.save();
     context.ctx.translate(this.rect.x, this.rect.y);
@@ -148,7 +159,7 @@ export class Layer extends Child {
   }
 
   /**
-   * Event listener
+   * Redirect event to children
    * @param event Event
    */
   onEvent(event) {
@@ -174,12 +185,12 @@ export class Layer extends Child {
     // Children receive messages when forwarding is enabled
     else if(this.eventForwarding) {
       _.each(this.children, child => {
-        !child.disabled && child.onEvent(event);
+        return !child.disabled && child.onEvent(event) !== true;
       });
     }
   }
 
-  /** Update childs */
+  /** Update children */
   update() {
     if(this.popup)
       this.popup.update();
@@ -207,11 +218,10 @@ Layer.BorderBox = function(child, prev, opts) {
 };
 
 /**
- * Engine state
+ * TODO: Engine state
+ * @class
  */
 export class State extends Layer {
-  /**
-   * Init state, register resources
-   */
+  /** Init state, register resources */
   init() {}
 }

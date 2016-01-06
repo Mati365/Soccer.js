@@ -3,7 +3,10 @@ import { Rect } from "shared/math";
 import Color from "shared/color";
 import Control from "./control";
 
-/** ProgressBar */
+/**
+ * Control that shows progress on bar
+ * @class
+ */
 export default class ProgressBar extends Control {
   /**
    * @param rect        Rectangle dimensions
@@ -14,10 +17,7 @@ export default class ProgressBar extends Control {
     this.percentage = percentage;
   }
 
-  /**
-   * Draw progress
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     // Value must be between 0 and 1, not 3 or -1
     let percentage = Math.max(0, Math.min(this.percentage, 1.0));

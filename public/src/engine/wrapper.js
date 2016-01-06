@@ -4,7 +4,8 @@ import Color from "shared/color";
 import { Child } from "../engine/object";
 
 /**
- * Simple sprite renderer
+ * Render sprite as engine object
+ * @class
  */
 export class Sprite extends Child {
   /**
@@ -66,10 +67,7 @@ export class Text extends Child {
     return this.layer.canvas.context.textWidth(this.text);
   }
 
-  /**
-   * Render text
-   * @param context   Canvas context object
-   */
+  /** @inheritdoc */
   draw(context) {
     context
       .fillWith(this.color)

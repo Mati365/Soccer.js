@@ -16,10 +16,7 @@ export class Button extends Control {
     this.text = text;
   }
 
-  /**
-   * Draw button
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     // Button fill color
     let fillColor = Color.parseHex(
@@ -50,20 +47,14 @@ export class Button extends Control {
 
 /** Radiobutton */
 export class Radio extends Button {
-  /**
-   * Forward event to callbacks
-   * @param event  Event
-   */
+  /** @inheritdoc */
   onEvent(event) {
     if(this._checkMouseEvent(event) && event.type === Message.Type.MOUSE_CLICK)
       this.checked = !this.checked;
     return super.onEvent(event);
   }
 
-  /**
-   * Draw radio
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     // Radiobutton color
     context.fillWith(Color.Hex.WHITE);

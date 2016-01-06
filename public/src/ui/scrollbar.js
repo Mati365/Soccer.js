@@ -37,10 +37,7 @@ export default class ScrollBar extends Control {
     return this;
   }
 
-  /**
-   * Event listener
-   * @param event Event
-   */
+  /** @inheritdoc */
   onEvent(event) {
     // Scroll event was accepted by parent so do not check when cursor is over
     if(!this.handlePos
@@ -89,10 +86,7 @@ export default class ScrollBar extends Control {
     return this;
   }
 
-  /**
-   * Draw progress
-   * @param context Canvas context
-   */
+  /** @inheritdoc */
   draw(context) {
     // Background
     context

@@ -7,6 +7,7 @@ import ListBox from "../ui/listbox";
 
 /**
  * Table control
+ * @class
  */
 export default class Table extends Layer {
   constructor(headers, rect) {
@@ -57,10 +58,7 @@ export default class Table extends Layer {
     return this;
   }
 
-  /**
-   * Remove all children except the header
-   * @returns {Table}
-   */
+  /** @inheritdoc */
   clear() {
     this.listbox.clear();
     return this;
@@ -69,6 +67,7 @@ export default class Table extends Layer {
   /**
    * Add row
    * @param values  Row value eg. ["val1", "val2"]
+   * @override
    */
   add(values) {
     let row = this.listbox.add(new ListBox.Row);

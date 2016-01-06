@@ -12,6 +12,7 @@ import Client from "../multiplayer/client";
 
 /**
  * List of rooms
+ * @class
  */
 export default class RoomList extends State {
   constructor() {
@@ -28,7 +29,7 @@ export default class RoomList extends State {
   }
 
   /**
-   * Reload room list
+   * Fetch new room list from server
    * @private
    */
   _reloadRoomList() {
@@ -48,14 +49,8 @@ export default class RoomList extends State {
       .catch(_.partial(console.log, "Cannot fetch list of channels..."));
   }
 
-  /**
-   * Initialize state
-   */
+  /** @inheritdoc */
   init() {
-    let window = new Popup(null, new Rect(60, 60, 256, 256));
-    window.add(new Button(new Rect(90, 90, 90, 90), "Refresh"));
-    this.showPopup(window);
-
     // List of channels
     this.add(this.table, { fill: [1.0, .9] });
 
@@ -71,7 +66,13 @@ export default class RoomList extends State {
     toolbar
       .add(new Button(new Rect(0, 0, 90, 0), "Create"), { fill: [0, 1.0] })
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
-        Client.emit("createRoom", { name: "DUPA", password: "" });
+        this.showPopup(new RoomList.CreatorPopup());
       });
+  }
+};
+
+RoomList.CreatorPopup = class extends Popup {
+  constructor() {
+    super(Layer.VBox, new Rect(60, 60, 320, 256), "Create room on server");
   }
 };
