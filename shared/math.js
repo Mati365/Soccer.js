@@ -119,7 +119,7 @@ class Rect extends Vec2 {
    */
   borderReduce(border) {
     this.x += border; this.y += border;
-    this.w -= 2 * border; this.h -= 2 * border;
+    this.w -= border * 2; this.h -= border * 2;
     return this;
   }
 

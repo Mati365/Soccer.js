@@ -12,9 +12,19 @@ import ListBox from "../ui/listbox";
 export default class Table extends Layer {
   constructor(headers, rect) {
     super(Layer.VBox, rect);
+
+    // Initialise table
     this.init = () => {
+      // ListBox with ScrollBar
+      this.listbox = super.add(new ListBox, { fill: [1.0, .9] });
+
+      // List of headers
+      this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 25)), { fill: [1.0, 0]});
+      this.header.spacing = 0;
+      this.header.rect.x += 5;
+
       this
-        ._setHeaders(headers)
+        .setHeaders(headers)
         .setRows([]);
     };
   }
@@ -23,11 +33,9 @@ export default class Table extends Layer {
    * Clear all childs and add header row
    * @param headers Headers eg. [["DUPA", .2], ["KUPA", .3]]
    * @returns {Table}
-   * @private
    */
-  _setHeaders(headers) {
-    this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 28)), { fill: [1.0, 0]});
-    this.header.spacing = 0;
+  setHeaders(headers) {
+    this.header.clear();
 
     // Add headers
     _.each(headers, ([title, size]) => {
@@ -45,13 +53,7 @@ export default class Table extends Layer {
    * @returns {Table}
    */
   setRows(rows) {
-    // Create listbox
-    if(!this.listbox) {
-      this.listbox = super.add(new ListBox, { fill: [1.0, .9] });
-
-      //this.listbox.rect.h -= 28;
-      this.header.rect.x += 5;
-    }
+    this.clear();
 
     // Add every row to listbox
     _.each(rows, this.add.bind(this));

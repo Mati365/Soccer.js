@@ -29,11 +29,11 @@ export default class Popup extends Layer {
       // Write popup title
     if(this.title)
       context
-        .fillWith(Color.Hex.LIGHT_GRAY)
-        .setFontSize(20)
+        .fillWith(Color.Hex.WHITE)
+        .setFontSize(13)
         .drawText(this.title, new Vec2(
-            this.rect.x + this.rect.w / 2 - context.textWidth(this.title) / 2
-          , this.rect.y + 20
+            this.rect.x + 5
+          , this.rect.y + this.rect.h - 2
         ));
 
     // Draw children
@@ -49,7 +49,7 @@ export default class Popup extends Layer {
   init() {
     // Return button
     this
-      .add(new Button(new Rect(this.rect.w / 2 - 45, this.rect.h - 22, 90, 20), "Previous"), { useLayout: false })
+      .add(new Button(new Rect(this.rect.w - 92, this.rect.h - 19, 90, 16), "Return"), { useLayout: false })
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
         this.layer.showPopup(null);
       });

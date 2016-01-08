@@ -4,8 +4,9 @@ import { State, Layer } from "../engine/object";
 import { Rect } from "shared/math";
 
 import Table from "../ui/table";
-import { Button } from "../ui/button";
+import { Button, Radio } from "../ui/button";
 import Popup from "../ui/popup";
+import TextBox from "../ui/textbox";
 
 import Message from "../engine/message";
 import Client from "../multiplayer/client";
@@ -16,13 +17,12 @@ import Client from "../multiplayer/client";
  */
 export default class RoomList extends State {
   constructor() {
-    super(Layer.VBox);
+    super(Layer.HBox);
     this.table = new Table([
-        ["Name", .5]
+        ["Name", .4]
       , ["Admin", .2]
-      , ["Pass", .1]
-      , ["Total", .1]
-      , ["Max", .1]
+      , ["Pass", .2]
+      , ["Total", .2]
     ]);
 
     this._reloadRoomList();
@@ -38,11 +38,9 @@ export default class RoomList extends State {
       this.table.clear();
 
       // Add each row to listBox
-      for(let i = 0;i < 90;++i)
-        _.each(list, data => {
-          data.name = i;
-          this.table.add(_.values(data));
-        });
+      _.each(list, data => {
+        this.table.add(_.values(data));
+      });
     };
     Client.emit("listRooms")
       .then(reloadList)
@@ -52,19 +50,19 @@ export default class RoomList extends State {
   /** @inheritdoc */
   init() {
     // List of channels
-    this.add(this.table, { fill: [1.0, .9] });
+    this.add(this.table, { fill: [.8, 1.0] });
 
     // List methods
-    let toolbar = this.add(new Layer(Layer.HBox, new Rect), { fill: [1.0, .1] });
+    let toolbar = this.add(new Layer(Layer.VBox, new Rect), { fill: [.2, 1.0] });
 
     // Refresh button
     toolbar
-      .add(new Button(new Rect(0, 0, 90, 0), "Refresh"), { fill: [0, 1.0] })
+      .add(new Button(new Rect(0, 0, 0, 30), "Refresh"), { fill: [1.0, .0] })
       .addForwarder(Message.Type.MOUSE_CLICK, this._reloadRoomList.bind(this));
 
     // Create room button
     toolbar
-      .add(new Button(new Rect(0, 0, 90, 0), "Create"), { fill: [0, 1.0] })
+      .add(new Button(new Rect(0, 0, 0, 30), "Create"), { fill: [1.0, .0] })
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
         this.showPopup(new RoomList.CreatorPopup());
       });
@@ -73,6 +71,12 @@ export default class RoomList extends State {
 
 RoomList.CreatorPopup = class extends Popup {
   constructor() {
-    super(Layer.VBox, new Rect(60, 60, 320, 256), "Create room on server");
+    super(Layer.VBox, new Rect(0, 0, 320, 256), "Create room on server");
+  }
+
+  /** @inheritdoc */
+  init() {
+    this.add(new Radio(new Rect(10, 60, 90, 16), "list in list"));
+    super.init();
   }
 };

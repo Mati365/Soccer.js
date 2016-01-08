@@ -185,7 +185,21 @@ export class Layer extends Child {
     // Children receive messages when forwarding is enabled
     else if(this.eventForwarding) {
       _.each(this.children, child => {
-        return !child.disabled && child.onEvent(event) !== true;
+        // Ignore if disabled
+        if(child.disabled)
+          return;
+
+        // Mark child as focus
+        let result = child.onEvent(event);
+        if(result === true) {
+          // Remove and add to top
+          this.children = _
+            .chain(this.children)
+            .tap(_.partialRight(_.remove, child))
+            .unshift(child)
+            .value();
+          return false;
+        }
       });
     }
   }

@@ -75,7 +75,7 @@ export default class ListBox extends Layer {
     // Border
     this.scrollbar.draw(context);
     context
-      .strokeWith(Color.Hex.WHITE)
+      .strokeWith(Color.Hex.LIGHT_GRAY)
       .strokeRect(this.rect);
   }
 

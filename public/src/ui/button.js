@@ -1,4 +1,4 @@
-import { Vec2 } from "shared/math";
+import { Vec2, Rect } from "shared/math";
 import Color from "shared/color";
 
 import Control from "./control";
@@ -20,15 +20,13 @@ export class Button extends Control {
   draw(context) {
     // Button fill color
     let fillColor = Color.parseHex(
-      this.state !== Message.Type.MOUSE_DOWN
-        ? Color.Hex.WHITE
-        : Schema.button.background
+      Color.Hex[this.state !== Message.Type.MOUSE_DOWN ? 'WHITE' : 'BLACK']
     );
 
     // Draw background
     context
       .fillWith(fillColor)
-      .fillRect(this.rect, Schema.button.background);
+      .fillRect(this.rect, Color.Hex.BLACK);
 
     // Draw text
     let fontSize = this.rect.h * 0.9;
@@ -56,22 +54,22 @@ export class Radio extends Button {
 
   /** @inheritdoc */
   draw(context) {
+    let box = new Rect(this.rect.x, this.rect.y, this.rect.h, this.rect.h);
+
     // Radiobutton color
     context.fillWith(Color.Hex.WHITE);
 
     // Filled in when checked
-    if(this.checked) {
-      context.fillRect(this.rect.clone().borderReduce(3));
-    }
+    this.checked && context.fillRect(box.clone().borderReduce(2));
 
     // Border and text
     context
       .strokeWith(Color.Hex.DARK_GRAY)
-      .strokeRect(this.rect)
+      .strokeRect(box)
 
       .setFontSize(this.rect.h)
       .drawText(this.text, new Vec2(
-          this.rect.x + this.rect.w + 10
+          this.rect.x + this.rect.h + 10
         , this.rect.y + this.rect.h * 0.85
       ));
   }
