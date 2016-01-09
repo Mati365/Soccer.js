@@ -2,7 +2,6 @@ import { Vec2, Rect } from "shared/math";
 import Color from "shared/color";
 
 import Control from "./control";
-import Schema from "./schema";
 import Message from "../engine/message";
 
 /** Button */
@@ -26,7 +25,7 @@ export class Button extends Control {
     // Draw background
     context
       .fillWith(fillColor)
-      .fillRect(this.rect, Color.Hex.BLACK);
+      .fillRect(this.rect);
 
     // Draw text
     let fontSize = this.rect.h * 0.9;
@@ -40,6 +39,15 @@ export class Button extends Control {
           this.rect.x + this.rect.w / 2 - context.textWidth(this.text) / 2
         , this.rect.y + this.rect.h / 2 + fontSize * .4
       ));
+
+    // Draw bottom shadow
+    context
+      .strokeWith(Color.Hex.GRAY)
+      .strokeLine(
+          new Vec2(this.rect.x + 1, this.rect.y + this.rect.h)
+        , new Vec2(this.rect.x + this.rect.w, this.rect.y + this.rect.h)
+        , 2
+      );
   }
 }
 
@@ -56,21 +64,26 @@ export class Radio extends Button {
   draw(context) {
     let box = new Rect(this.rect.x, this.rect.y, this.rect.h, this.rect.h);
 
-    // Radiobutton color
-    context.fillWith(Color.Hex.WHITE);
-
     // Filled in when checked
-    this.checked && context.fillRect(box.clone().borderReduce(2));
+    if(this.checked) {
+      context
+        .fillWith(Color.Hex.GREEN)
+        .fillRect(box.clone().borderReduce(2));
+    }
 
     // Border and text
     context
       .strokeWith(Color.Hex.DARK_GRAY)
-      .strokeRect(box)
+      .strokeRect(box);
 
-      .setFontSize(this.rect.h)
-      .drawText(this.text, new Vec2(
-          this.rect.x + this.rect.h + 10
-        , this.rect.y + this.rect.h * 0.85
-      ));
+    // Draw text if provided
+    if(this.text)
+      context
+        .fillWith(Color.Hex.WHITE)
+        .setFontSize(this.rect.h)
+        .drawText(this.text, new Vec2(
+            this.rect.x + this.rect.h + 10
+          , this.rect.y + this.rect.h * 0.85
+        ));
   }
 }

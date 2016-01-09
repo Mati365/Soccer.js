@@ -65,6 +65,7 @@ Color.Hex = {
   , GREEN: "#00FF00"
   , BLUE: "#0000FF"
   , DARK_GRAY: "#0f0f0f"
+  , GRAY: "#d3d3d3"
   , LIGHT_GRAY: "#e8e8e8"
 };
 

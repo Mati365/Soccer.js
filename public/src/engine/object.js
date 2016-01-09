@@ -131,6 +131,9 @@ export class Layer extends Child {
         child.rect.xy = this.children.length || !_.isEmpty(opts)
           ? this.layout(child, _.last(this.children), opts)
           : [this.spacing, this.spacing];
+
+        // Disable smoothing
+        child.rect.xy = [parseInt(child.rect.x), parseInt(child.rect.y)];
       }
     }
 
@@ -221,6 +224,22 @@ Layer.HBox = function(child, prev) {
 };
 Layer.VBox = function(child, prev) {
   return prev.rect.clone().add(new Vec2(0, prev.rect.h + this.spacing)).xy;
+};
+
+/** Titled list e.g. forms */
+Layer.GridBox = function(cols, rows) {
+  return function(child, prev, opts) {
+    this.gridChildren = (this.gridChildren || this.children.length);
+
+    // New position
+    let pos =
+            [ this.gridChildren % cols * this.rect.w / cols + this.spacing
+            , this.rect.h / rows * Math.floor(this.gridChildren / cols) + this.spacing
+            ];
+
+    this.gridChildren += ((opts && opts.expand) || 1);
+    return pos;
+  };
 };
 
 /** Border box */

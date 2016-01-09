@@ -44,20 +44,33 @@ export default class Control extends Child {
   }
 
   /**
+   * Check component has focus(when has mouse click or drag event
+   * @returns {Boolean} if has
+   */
+  hasFocus() {
+    return this.state === Message.Type.MOUSE_CLICK;
+  }
+
+  /**
    * Forward event to callbacks
    * @param event  Event
    */
   onEvent(event) {
     // TODO: Add more event types
-    if(!this._checkMouseEvent(event))
+    if(!this._checkMouseEvent(event)) {
+      this.state = 0;
       return false;
+    }
 
     // Set focus on object
     if(this.layer)
       this.layer.focus = this;
 
+    // Set state only on mouse event, that helps with setting focus
+    if(event.isMouseEvent())
+      this.state = event.type;
+
     // Assign state and call callback
-    this.state = event.type;
     this._sendToForwarder(event);
   }
 }

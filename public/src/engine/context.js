@@ -25,6 +25,7 @@ export default class Context {
       this.domElement = $("<canvas />").prop({
           width: 600
         , height: 400
+        , tabindex: 0
       })[0];
       $("body").append(this.domElement);
 
@@ -73,14 +74,17 @@ export default class Context {
 
   /**
    * Draw line from p1 to p2
-   * @param p1  Begin
-   * @param p2  End
+   * @param p1    Begin
+   * @param p2    End
+   * @param width Line width
    * @returns {Context}
    */
-  strokeLine(p1, p2) {
+  strokeLine(p1, p2, width=3) {
     this.ctx.beginPath();
+    this.ctx.lineWidth = width;
     this.ctx.moveTo(p1.x, p1.y);
     this.ctx.lineTo(p2.x, p2.y);
+    this.ctx.closePath();
     this.ctx.stroke();
     return this;
   }

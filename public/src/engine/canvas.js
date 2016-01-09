@@ -41,8 +41,8 @@ export default class Canvas {
     domInstance.translateEvent = (eventName, eventCode, data) => {
       let handler = () => {
         switch(eventCode) {
-          case Message.Type.MOUSE_DOWN: mousePressed = true; break;
-          case Message.Type.MOUSE_UP: mousePressed = false; break;
+          case Message.Type.MOUSE_DOWN: mousePressed = true;  break;
+          case Message.Type.MOUSE_UP:   mousePressed = false; break;
         }
         this.broadcast(new Message(eventCode, this, data));
       };
@@ -57,21 +57,22 @@ export default class Canvas {
           super(x, y);
           this.amount =  e.originalEvent.deltaY / Math.abs(e.originalEvent.deltaY);
         }
-
         clone() { return new ScrollAmount(this.x, this.y); }
       }
-
-      // broadcast data
-      this.broadcast(new Message(
-          Message.Type.MOUSE_SCROLL
-        , this
-        , new ScrollAmount(mousePos.x, mousePos.y)
-      ));
+      this.broadcast(new Message(Message.Type.MOUSE_SCROLL, this, new ScrollAmount(mousePos.x, mousePos.y)));
     };
 
     // Cached mouse position
     let mousePos = new Vec2;
     domInstance
+      /** KEYBOARD LISTENERS */
+      .on("keypress", e => {
+        this.broadcast(new Message(Message.Type.KEY_ENTER, this, e.which));
+      })
+
+       /** MOUSE SCROLL */
+      .on("mousewheel", mouseScroll)
+
       /** MOUSE EVENT LISTENERS */
       .mousemove(e => {
         mousePos.xy = [
@@ -80,9 +81,6 @@ export default class Canvas {
         ];
         mousePressed && this.broadcast(new Message(Message.Type.MOUSE_DRAG, this, mousePos));
       })
-
-      /** MOUSE SCROLL */
-      .on("mousewheel", mouseScroll)
 
       .translateEvent("click", Message.Type.MOUSE_CLICK, mousePos)
       .translateEvent("mousedown", Message.Type.MOUSE_DOWN, mousePos)
@@ -94,7 +92,7 @@ export default class Canvas {
    * @param data          Event data
    * @param currentState  If true sends only to visible state
    */
-  broadcast(data, currentState=false) {
+  broadcast(data, currentState=true) {
     if(currentState)
       this.states[this.activeState].onEvent(data);
     else

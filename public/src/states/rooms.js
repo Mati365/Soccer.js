@@ -3,8 +3,10 @@ import _ from "lodash";
 import { State, Layer } from "../engine/object";
 import { Rect } from "shared/math";
 
-import Table from "../ui/table";
 import { Button, Radio } from "../ui/button";
+import { Text } from "../engine/wrapper";
+
+import Table from "../ui/table";
 import Popup from "../ui/popup";
 import TextBox from "../ui/textbox";
 
@@ -71,12 +73,21 @@ export default class RoomList extends State {
 
 RoomList.CreatorPopup = class extends Popup {
   constructor() {
-    super(Layer.VBox, new Rect(0, 0, 320, 256), "Create room on server");
+    super(Layer.GridBox(2, 5), new Rect(0, 0, 320, 256), "Create room on server");
   }
 
   /** @inheritdoc */
   init() {
-    this.add(new Radio(new Rect(10, 60, 90, 16), "list in list"));
+    this.add(new Text(new Rect(0, 0, 0, 16), "Room name:"));
+    this.add(new TextBox(new Rect(0, 0, 140, 16), "list in list"));
+
+    this.add(new Radio(new Rect(0, 0, 16, 16), "Show on list"), { expand: 2 });
+    let players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 140, 100)));
+    players.setRows([
+      ["2"], ["4"], ["6"], ["8"], ["10"], ["12"], ["16"]
+    ]);
+    this.add(new Button(new Rect(0, 0, 90, 16), "Create"));
+
     super.init();
   }
 };

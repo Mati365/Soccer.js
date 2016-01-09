@@ -15,13 +15,13 @@ export default class Table extends Layer {
 
     // Initialise table
     this.init = () => {
-      // ListBox with ScrollBar
-      this.listbox = super.add(new ListBox, { fill: [1.0, .9] });
-
       // List of headers
       this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 25)), { fill: [1.0, 0]});
       this.header.spacing = 0;
       this.header.rect.x += 5;
+
+      // ListBox with ScrollBar
+      this.listbox = super.add(new ListBox, { fill: [1.0, .9] });
 
       this
         .setHeaders(headers)
@@ -39,7 +39,7 @@ export default class Table extends Layer {
 
     // Add headers
     _.each(headers, ([title, size]) => {
-      this.header.add(new Text(title, new Rect), { fill: [size, 1.0] });
+      this.header.add(new Text(new Rect, title), { fill: [size, 1.0] });
     });
 
     // Size of columns

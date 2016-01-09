@@ -52,11 +52,11 @@ export class Sprite extends Child {
 
 export class Text extends Child {
   /**
-   * @param text  Text to render
    * @param rect  Rect coordinates
+   * @param text  Text to render
    * @param color Text color
    */
-  constructor(text, rect = new Rect, color=Color.Hex.WHITE) {
+  constructor(rect = new Rect, text="", color=Color.Hex.WHITE) {
     super(rect);
     this.text = text;
     this.color = color;

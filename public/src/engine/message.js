@@ -23,6 +23,11 @@ export default class Message {
   isMouseEvent() {
     return this.type >= Message.Type.MOUSE_DOWN && this.type <= Message.Type.MOUSE_CLICK;
   }
+
+  /** Check is keyboard event */
+  isKeyboardEvent() {
+    return this.type >= Message.Type.KEY_DOWN && this.type <= Message.Type.KEY_ENTER;
+  }
 }
 
 /**
