@@ -12,17 +12,17 @@ import ListBox from "../ui/listbox";
 export default class Table extends Layer {
   constructor(headers, rect) {
     super(Layer.VBox, rect);
+    this.padding.xy = [0, 0];
 
     // Initialise table
     this.init = () => {
       // List of headers
-      this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 25)), { fill: [1.0, 0]});
-      this.header.spacing = 0;
-      this.header.rect.x += 5;
+      this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 16)), { fill: [1.0, 0]});
+      this.header.padding.xy = [0, 0];
+      this.header.border.y = 5;
 
       // ListBox with ScrollBar
       this.listbox = super.add(new ListBox, { fill: [1.0, .9] });
-
       this
         .setHeaders(headers)
         .setRows([]);
@@ -73,6 +73,7 @@ export default class Table extends Layer {
    */
   add(values) {
     let row = this.listbox.add(new ListBox.Row);
+
     // Add each column to row
     _.each(values, (column, index) => {
       row.add(new ListBox.Item(column), { fill: [this.columns[index], .0] });

@@ -12,7 +12,9 @@ export class Button extends Control {
    */
   constructor(rect, text) {
     super(rect);
+
     this.text = text;
+    this.border.xy = [5, 5];
   }
 
   /** @inheritdoc */

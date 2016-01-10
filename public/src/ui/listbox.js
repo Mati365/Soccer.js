@@ -17,15 +17,16 @@ import Message from "../engine/message";
 export default class ListBox extends Layer {
   constructor(rect) {
     super(Layer.VBox, rect);
-    this.spacing = 0;
+
     this.multiselect = false;
+    this.padding.xy = [0, 1];
   }
 
   /** @inheritdoc */
   init()  {
     this.scrollbar = new ScrollBar(new Rect(this.rect.x + this.rect.w - 12, this.rect.y, 12, this.rect.h));
     this.scrollbar.addForwarder(Message.Type.MOUSE_DRAG, () => {
-      this.setVisibleIndex(this.scrollbar.position, this.scrollbar.visible);
+      this.setVisibleChildren(this.scrollbar.position, this.scrollbar.visible);
     });
   }
 
@@ -34,7 +35,7 @@ export default class ListBox extends Layer {
    * @param start   Start index
    * @param visible Visible count
    */
-  setVisibleIndex(start, visible) {
+  setVisibleChildren(start, visible) {
     let pos = 0;
     _.each(this.children, (child, index) => {
       if(index < start || index >= start + visible)
@@ -89,11 +90,11 @@ export default class ListBox extends Layer {
 
     // Manage scrollbar
     this.scrollbar.setTotal(this.children.length);
-    this.scrollbar.visible = Math.floor(this.rect.h / child.rect.h);
+    if(!this.scrollbar.visible)
+      this.scrollbar.visible = Math.floor(this.rect.h / child.rect.h);
 
     // Overflow is hidden
-    if(this.rect.h <= child.rect.y + child.rect.h)
-      child.disabled = true;
+    this.setVisibleChildren(0, this.scrollbar.visible);
     return child;
   }
 
@@ -116,6 +117,7 @@ export default class ListBox extends Layer {
 ListBox.Item = class extends Radio {
   constructor(text) {
     super(new Rect(0, 0, 0, 16), text);
+    this.border.xy = [0, 1];
   }
 
   /** @inheritdoc */
@@ -148,8 +150,8 @@ ListBox.Row = class extends Layer {
   constructor() {
     super(Layer.HBox, new Rect(0, 0, 0, 16));
 
-    this.spacing = 0;
     this.eventForwarding = false;
+    this.padding.xy = [0, 0];
   }
 
   /**

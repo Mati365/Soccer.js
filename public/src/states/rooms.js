@@ -59,35 +59,44 @@ export default class RoomList extends State {
 
     // Refresh button
     toolbar
-      .add(new Button(new Rect(0, 0, 0, 30), "Refresh"), { fill: [1.0, .0] })
+      .add(new Button(new Rect(0, 0, 0, 16), "Refresh"), { fill: [1.0, .0] })
       .addForwarder(Message.Type.MOUSE_CLICK, this._reloadRoomList.bind(this));
 
     // Create room button
     toolbar
-      .add(new Button(new Rect(0, 0, 0, 30), "Create"), { fill: [1.0, .0] })
+      .add(new Button(new Rect(0, 0, 0, 16), "Create"), { fill: [1.0, .0] })
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
         this.showPopup(new RoomList.CreatorPopup());
       });
+
+    Popup.input(this, "Enter nick").then(text => {
+      console.log(text);
+    });
   }
 };
 
 RoomList.CreatorPopup = class extends Popup {
   constructor() {
-    super(Layer.GridBox(2, 5), new Rect(0, 0, 320, 256), "Create room on server");
+    super(Layer.HBox, new Rect(0, 0, 480, 256), "Room creator");
   }
 
   /** @inheritdoc */
   init() {
-    this.add(new Text(new Rect(0, 0, 0, 16), "Room name:"));
-    this.add(new TextBox(new Rect(0, 0, 140, 16), "list in list"));
+    let grid = this.add(new Layer(Layer.GridBox(2, 8), new Rect), { fill: [.7, 1.0] });
 
-    this.add(new Radio(new Rect(0, 0, 16, 16), "Show on list"), { expand: 2 });
-    let players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 140, 100)));
+    grid.add(new Text(new Rect(0, 0, 0, 14), "Room name:"));
+    grid.add(new TextBox(new Rect(0, 0, 140, 16), "name"));
+
+    grid.add(new Text(new Rect(0, 0, 0, 14), "Password:"));
+    grid.add(new TextBox(new Rect(0, 0, 140, 16), "pass"));
+
+    grid.add(new Radio(new Rect(0, 0, 16, 14), "Show on list"), { expand: 2 });
+
+    let players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 0, 160)), { fill: [.3, 0.0] });
     players.setRows([
       ["2"], ["4"], ["6"], ["8"], ["10"], ["12"], ["16"]
     ]);
-    this.add(new Button(new Rect(0, 0, 90, 16), "Create"));
 
-    super.init();
+    this.makeCloseable();
   }
 };

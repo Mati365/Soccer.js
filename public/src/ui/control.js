@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import { Child } from "../engine/object";
 import Message from "../engine/message";
 
@@ -8,6 +10,7 @@ export default class Control extends Child {
     this.forwarder = {};
     this.state = null;
     this.disabled = false;
+    this.border.xy = [5, 5];
   }
 
   /**
@@ -17,8 +20,8 @@ export default class Control extends Child {
    * @returns {Control}
    */
   addForwarder(type, callback) {
-    console.assert(!this.forwarder[type], "Forwarder is already registered!");
-    this.forwarder[type] = callback;
+    let oldForwarder = this.forwarder[type];
+    this.forwarder[type] = oldForwarder ? _.wrap(oldForwarder, callback) : callback;
     return this;
   }
 

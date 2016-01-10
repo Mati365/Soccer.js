@@ -15,6 +15,7 @@ export class Sprite extends Child {
    */
   constructor(rect, resourceId, totalTiles=new Vec2(1, 1)) {
     super(rect);
+
     this.resourceId = resourceId;
     this.totalTiles = totalTiles;
     this.tileIndex = new Vec2;
@@ -58,8 +59,10 @@ export class Text extends Child {
    */
   constructor(rect = new Rect, text="", color=Color.Hex.WHITE) {
     super(rect);
+
     this.text = text;
     this.color = color;
+    this.border.xy = [0, 0];
   }
 
   /** Get text width in pixels */

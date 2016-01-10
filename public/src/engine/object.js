@@ -9,6 +9,7 @@ import Message from "./message";
 export class Child {
   constructor(rect) {
     this.rect = rect;
+    this.border = new Vec2;
   }
 
   /**
@@ -43,11 +44,26 @@ export class Layer extends Child {
     this.popup = null;
 
     // Spacing between items in  layout
-    this.spacing = 5;
+    this.padding = new Vec2(5, 5);
     this.layout = layout;
 
     // If false children wont receive any events
     this.eventForwarding = true;
+  }
+
+  /**
+   * Init panel
+   */
+  init() {}
+
+  /**
+   * Generate first child starting position with padding
+   * @param child Child
+   * @returns {Vec2}
+   * @private
+   */
+  _genChildPadding(child) {
+    return this.padding.clone().add(child.border);
   }
 
   /**
@@ -59,7 +75,7 @@ export class Layer extends Child {
     this.popup = null;
     if(this.layout) {
       _.each(this.children, (item, index) => {
-        item.rect.xy = !index? [0, 0] : this.layout(item, this.children[index - 1]);
+        item.rect.xy = !index ? this._genChildPadding(item).xy : this.layout(item, this.children[index - 1]);
       });
     }
     return this;
@@ -68,20 +84,18 @@ export class Layer extends Child {
   /**
    * Set layer as popup object
    * @param popup  Popup, null if close popup
-   * @returns {Layer}
+   * @returns {Popup}
    */
   showPopup(popup) {
-    this.popup = popup;
-
     // Center popup on screen
-    if(this.popup) {
-      this.popup.layer = this;
-      this.popup.rect.xy = [
-          this.rect.w / 2 - this.popup.rect.w / 2
-        , this.rect.h / 2 - this.popup.rect.h / 2
+    if(popup) {
+      popup.layer = this;
+      popup.rect.xy = [
+          this.rect.w / 2 - popup.rect.w / 2
+        , this.rect.h / 2 - popup.rect.h / 2
       ];
     }
-    return this;
+    return this.popup = popup;
   }
 
   /**
@@ -114,12 +128,14 @@ export class Layer extends Child {
 
     // If layout is present use it to organise position
     if(this.layout) {
+      let padding = this._genChildPadding(child);
+
       // Optional layout params
       if(opts && opts.fill) {
         // Placement of child
         child.rect.wh = [
-            ((this.rect.w * opts.fill[0]) || child.rect.w) - this.spacing * 2
-          , ((this.rect.h * opts.fill[1]) || child.rect.h) - this.spacing * 2
+            opts.fill[0] ? (this.rect.w * opts.fill[0] - this.padding.x * 2) : child.rect.w
+          , opts.fill[1] ? (this.rect.h * opts.fill[1] - this.padding.y * 2) : child.rect.h
         ];
       }
 
@@ -128,18 +144,19 @@ export class Layer extends Child {
         opts = _.omit(opts, ["fill", "useLayout"]);
 
         // Use layout placement
-        child.rect.xy = this.children.length || !_.isEmpty(opts)
-          ? this.layout(child, _.last(this.children), opts)
-          : [this.spacing, this.spacing];
+        child.rect.xy = this.layout(child, _.last(this.children), opts) || padding.xy;
 
         // Disable smoothing
-        child.rect.xy = [parseInt(child.rect.x), parseInt(child.rect.y)];
+        child.rect.xy = [
+            parseInt(child.rect.x)
+          , parseInt(child.rect.y)
+        ];
       }
     }
 
     // Init children
-    child.init && child.init();
     this.children.push(child);
+    child.init && child.init();
     return child;
   }
 
@@ -220,10 +237,10 @@ export class Layer extends Child {
 
 /** Horizontal/Vertical box */
 Layer.HBox = function(child, prev) {
-  return prev.rect.clone().add(new Vec2(prev.rect.w + this.spacing, 0)).xy;
+  return prev && prev.rect.clone().add(new Vec2(prev.rect.w + prev.border.x, 0)).xy;
 };
 Layer.VBox = function(child, prev) {
-  return prev.rect.clone().add(new Vec2(0, prev.rect.h + this.spacing)).xy;
+  return prev && prev.rect.clone().add(new Vec2(0, prev.rect.h + prev.border.y)).xy;
 };
 
 /** Titled list e.g. forms */
@@ -231,10 +248,13 @@ Layer.GridBox = function(cols, rows) {
   return function(child, prev, opts) {
     this.gridChildren = (this.gridChildren || this.children.length);
 
+    // Column index
+    let colIndex = this.gridChildren % cols;
+
     // New position
     let pos =
-            [ this.gridChildren % cols * this.rect.w / cols + this.spacing
-            , this.rect.h / rows * Math.floor(this.gridChildren / cols) + this.spacing
+            [ colIndex * this.rect.w / cols + this.padding.x
+            , this.rect.h / rows * Math.floor(this.gridChildren / cols)  + this.padding.y
             ];
 
     this.gridChildren += ((opts && opts.expand) || 1);
