@@ -84,8 +84,8 @@ export default class Context {
     this.ctx.lineWidth = width;
     this.ctx.moveTo(p1.x, p1.y);
     this.ctx.lineTo(p2.x, p2.y);
-    this.ctx.closePath();
     this.ctx.stroke();
+    this.ctx.closePath();
     return this;
   }
 

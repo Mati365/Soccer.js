@@ -15,7 +15,7 @@ export default class TextBox extends Control {
    * @param rect  TextBox dimensions
    * @param text  Text
    */
-  constructor(rect, text) {
+  constructor(rect, text="") {
     super(rect);
     this.text = text;
   }

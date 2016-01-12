@@ -66,8 +66,14 @@ export default class Canvas {
     let mousePos = new Vec2;
     domInstance
       /** KEYBOARD LISTENERS */
-      .on("keypress", e => {
-        this.broadcast(new Message(Message.Type.KEY_ENTER, this, e.which));
+      .on("keydown", e => {
+        let isCharacter = e.which >= 65 && e.which <= 90;
+        if(isCharacter || e.which >= 48 && e.which <= 90 || _.contains([8, 32], e.which)) {
+          this.broadcast(
+            new Message(Message.Type.KEY_ENTER, this, e.which + (!e.shiftKey && isCharacter ? 32 : 0))
+          );
+          e.preventDefault();
+        }
       })
 
        /** MOUSE SCROLL */

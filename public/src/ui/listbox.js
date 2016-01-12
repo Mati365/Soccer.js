@@ -55,7 +55,29 @@ export default class ListBox extends Layer {
    * @returns {Array} Array of controls
    */
   get selected() {
-    return _.filter(this.children, { checked: true });
+    return _
+      .chain(this.children)
+      .filter({ checked: true })
+      .map(child => {
+        return child.children.length === 1
+          ? child.children[0].text
+          : _.map(child.children, _.partialRight(_.pick, 'text'));
+      })
+      .thru(array => {
+        return array.length && !this.multiselect ? array[0] : array;
+      })
+      .value();
+  }
+
+  /**
+   * Set selected child by index
+   * @param index Child index
+   * @returns {ListBox}
+   */
+  setSelectedIndex(index) {
+    this.deselect();
+    this.children[index].checked = true;
+    return this;
   }
 
   /**
@@ -116,7 +138,7 @@ export default class ListBox extends Layer {
  */
 ListBox.Item = class extends Radio {
   constructor(text) {
-    super(new Rect(0, 0, 0, 16), text);
+    super(new Rect(0, 0, 0, 14), text);
     this.border.xy = [0, 1];
   }
 
@@ -148,7 +170,7 @@ ListBox.Item = class extends Radio {
  */
 ListBox.Row = class extends Layer {
   constructor() {
-    super(Layer.HBox, new Rect(0, 0, 0, 16));
+    super(Layer.HBox, new Rect(0, 0, 0, 14));
 
     this.eventForwarding = false;
     this.padding.xy = [0, 0];

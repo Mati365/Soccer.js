@@ -18,9 +18,10 @@ class Body extends Circle {
  * Room class
  */
 class Room {
-  constructor(name, admin, password) {
+  constructor(name, admin, maxPlayers, password, hidden) {
     this.name = name;
     this.admin = admin;
+    this.maxPlayers = maxPlayers || 2;
     this.password = md5(password);
 
     this.ball = new Body(16, 16, 16);
@@ -28,7 +29,9 @@ class Room {
       spectators: []
     };
 
-    (Room.list = Room.list || []).push(this);
+    // hide room in rooms list
+    if(hidden !== true)
+      (Room.list = Room.list || []).push(this);
   }
 
   /**
@@ -126,8 +129,7 @@ class Room {
           name: room.name
         , admin: room.admin.nick
         , password: this.password === ""
-        , players: _.flatten(this.player).length
-        , maxPlayers: 16
+        , players: _.flatten(this.player).length + "/" + room.maxPlayers
       };
     });
   }

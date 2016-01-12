@@ -171,7 +171,7 @@ export class Layer extends Child {
     if(this.popup) {
       context
         .fillWith("rgba(0, 0, 0, .75")
-        .fillRect(this.rect);
+        .fillRect(new Rect(0, 0, this.rect.w, this.rect.h));
       this.popup.draw(context);
     }
 
@@ -237,10 +237,10 @@ export class Layer extends Child {
 
 /** Horizontal/Vertical box */
 Layer.HBox = function(child, prev) {
-  return prev && prev.rect.clone().add(new Vec2(prev.rect.w + prev.border.x, 0)).xy;
+  return prev && prev.rect.clone().add(new Vec2(prev.rect.w + prev.border.x + child.border.x, 0)).xy;
 };
 Layer.VBox = function(child, prev) {
-  return prev && prev.rect.clone().add(new Vec2(0, prev.rect.h + prev.border.y)).xy;
+  return prev && prev.rect.clone().add(new Vec2(0, prev.rect.h + prev.border.y + child.border.y)).xy;
 };
 
 /** Titled list e.g. forms */

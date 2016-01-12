@@ -2,6 +2,9 @@ Soccer.js
 ==============
 open source HaxBall clone written in ES6
 
+## Screenshots
+![Room creator](/screenshots/room_creator.png?raw=true "Room creator")
+
 ## Installing
 In cloned folder:
 ```

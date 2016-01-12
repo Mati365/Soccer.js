@@ -1,5 +1,7 @@
 "use strict";
-const _ = require("lodash");
+const validate = require("validate.js")
+    , _ = require("lodash");
+
 const { Room } = require("./room");
 
 /**
@@ -25,8 +27,22 @@ class Player {
       })
 
       /** Create room on server */
-      .on("createRoom", data => {
-        this.createRoom(data.name, data.password);
+      .on("createRoom", (data, fn) => {
+        let validation = validate(data, {
+            name: {
+              presence: true
+            , length: { minimum: 2, maximum: 32 }
+          }
+          , players: { numericality: { lessThanOrEqualTo: 20 } }
+        });
+        if(validation || this.room) {
+          fn({
+            error: "Invalid form data!"
+          });
+        } else {
+          this.room = new Room(data.name, this, data.players, data.password, data.hidden);
+          fn(`Login to ${data.name} room as admin!`);
+        }
       })
 
       /** Start room physics */
@@ -44,23 +60,12 @@ class Player {
   }
 
   /**
-   * Create room
-   * @param name      Name of room
-   * @param password  Password
-   */
-  createRoom(name, password) {
-    if(this.room)
-      return false;
-    return this.room = new Room(name, this, password || "");
-  }
-
-  /**
    * Set user nick, check if exists
    * @param nick  Nick
    * @returns true if not exists
    */
   setNick(nick) {
-    if(!Player.isNickAvailable(nick))
+    if(!nick.length || !Player.isNickAvailable(nick))
       return false;
     else
       return this.nick = nick;

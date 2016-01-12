@@ -40,9 +40,9 @@ export default class ScrollBar extends Control {
   /** @inheritdoc */
   onEvent(event) {
     // Scroll event was accepted by parent so do not check when cursor is over
-    if(!this.handlePos
-        && event.type !== Message.Type.MOUSE_SCROLL
-        && !this.rect.contains(event.data))
+    if(!this.grip
+      || (!this.handlePos  && event.type !== Message.Type.MOUSE_SCROLL && !this.rect.contains(event.data))
+    )
       return false;
 
     // Set state
@@ -79,7 +79,7 @@ export default class ScrollBar extends Control {
   setTotal(total) {
     let gripHeight = 0;
     if(total > this.visible)
-      gripHeight = Math.max(50, this.rect.h * (1.0 - (total - this.visible) / this.visible));
+      gripHeight = Math.max(20, this.rect.h * (1.0 - (total - this.visible) / total));
 
     this.grip = new Rect(this.rect.x, this.rect.y, this.rect.w, gripHeight);
     this._total = total;
