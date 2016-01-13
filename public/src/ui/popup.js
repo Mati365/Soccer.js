@@ -30,7 +30,7 @@ export default class Popup extends Layer {
    * @returns {Promise}
    */
   static input(layer, title) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       let popup = layer.showPopup(new Popup(Layer.HBox, new Rect(0, 0, 300, 70), title))
         , textBox = new TextBox(new Rect(0, 0, 300 - 50 - 15, 16));
 
@@ -38,16 +38,9 @@ export default class Popup extends Layer {
       popup.add(textBox);
 
       popup
-        .add(new Button(new Rect(0, 0, 50, 16), "Ok")
-          .addForwarder(Message.Type.MOUSE_CLICK, () => {
-            popup.hide() && resolve(textBox.text);
-          })
-        );
-
-      popup
-        .makeCloseable()
-        .addForwarder(Message.Type.MOUSE_CLICK, fn => {
-          fn() && reject();
+        .add(new Button(new Rect(0, 0, 50, 16), "Ok"))
+        .addForwarder(Message.Type.MOUSE_CLICK, () => {
+          popup.hide() && resolve(textBox.text);
         });
     });
   }
@@ -56,18 +49,23 @@ export default class Popup extends Layer {
    * Create confirm dialog
    * @param layer Root layer
    * @param title Confirm title
+   * @param type  Popup type
    * @returns {Promise}
    */
-  static confirm(layer, title) {
+  static confirm(layer, title, type=Popup.Type.OK) {
     return new Promise((resolve, reject) => {
-      let popup = layer.showPopup(new Popup(null, new Rect(0, 0, 300, 70), title));
-      popup
-        .add(new Button(new Rect(300 - 50 - 90 - 10, 49, 50, 16), "Ok")
-          .addForwarder(Message.Type.MOUSE_CLICK, () => { popup.hide() && resolve(); })
-        );
-      popup
-        .add(new Button(new Rect(300 - 90 - 5, 49, 90, 16), "Cancel")
-        .addForwarder(Message.Type.MOUSE_CLICK, () => { popup.hide() && reject(); }));
+      let popup = layer.showPopup(new Popup(null, new Rect(0, 0, 300, 70), title))
+        , pos = 300 - 5;
+
+      if(type == Popup.Type.OK)
+        popup
+          .add(new Button(new Rect(pos -= 50, 49, 50, 16), "Ok"))
+          .addForwarder(Message.Type.MOUSE_CLICK, () => { popup.hide() && resolve(); });
+
+      if(type == Popup.Type.CANCEL)
+        popup
+          .add(new Button(new Rect(pos -= 90, 49, 90, 16), "Cancel")
+          .addForwarder(Message.Type.MOUSE_CLICK, () => { popup.hide() && reject(); }));
     });
   }
 
@@ -119,3 +117,8 @@ export default class Popup extends Layer {
       .addForwarder(Message.Type.MOUSE_CLICK, this.hide.bind(this));
   }
 }
+Popup.Type = {
+    CANCEL: 1
+  , OK: 2
+  , OK_CANCEL: 3
+};

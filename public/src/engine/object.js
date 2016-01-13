@@ -52,6 +52,14 @@ export class Layer extends Child {
   }
 
   /**
+   * Resources to be preloaded after init
+   * @returns {Array}
+   */
+  get assets() {
+    return {};
+  }
+
+  /**
    * Init panel
    */
   init() {}
@@ -186,7 +194,7 @@ export class Layer extends Child {
     // TODO: use clone
     if(event.isMouseEvent()) {
       // If layer has rect property check mousePos
-      if(this.rect.w * this.rect.h && !this.rect.contains(event.data))
+      if(!this.popup && this.rect.w * this.rect.h && !this.rect.contains(event.data))
         return false;
 
       // Clone event

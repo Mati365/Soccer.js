@@ -22,7 +22,7 @@ class Room {
     this.name = name;
     this.admin = admin;
     this.maxPlayers = maxPlayers || 2;
-    this.password = md5(password);
+    this.password =  md5(password);
 
     this.ball = new Body(16, 16, 16);
     this.teams = {
@@ -32,6 +32,31 @@ class Room {
     // hide room in rooms list
     if(hidden !== true)
       (Room.list = Room.list || []).push(this);
+  }
+
+  /**
+   * Returns true if passwords matches
+   * @param password  Password in plain text
+   * @returns {boolean}
+   */
+  checkPassword(password) {
+    return md5(password) === this.password;
+  }
+
+  /**
+   * Returns true if server is full
+   * @returns {boolean}
+   */
+  isFull() {
+    return this.maxPlayers <= this.connected().length;
+  }
+
+  /**
+   * Returns true is room is locked
+   * @returns {boolean}
+   */
+  isLocked() {
+    return this.password !== "d41d8cd98f00b204e9800998ecf8427e";
   }
 
   /**
@@ -127,8 +152,7 @@ class Room {
     return _.map(Room.list, room => {
       return {
           name: room.name
-        , admin: room.admin.nick
-        , password: this.password === ""
+        , password: room.isLocked() ? "yes" : "no"
         , players: _.flatten(this.player).length + "/" + room.maxPlayers
       };
     });

@@ -20,6 +20,7 @@ class Player {
    * @private
    */
   _initListener() {
+    let self = this;
     this.socket
       /** Authorize to server */
       .on("setNick", (nick, fn) => {
@@ -35,24 +36,37 @@ class Player {
           }
           , players: { numericality: { lessThanOrEqualTo: 20 } }
         });
-        if(validation || this.room) {
-          fn({
-            error: "Invalid form data!"
-          });
-        } else {
-          this.room = new Room(data.name, this, data.players, data.password, data.hidden);
+
+        if(validation || this.room)
+          fn({ error: "Invalid form data!" });
+        else {
+          this.room = new Room(data.name, this, data.players, data.pass, data.hidden);
           fn(`Login to ${data.name} room as admin!`);
         }
       })
 
-      /** Start room physics */
-      .on("startRoom", () => {
-        this.room && this.room.start();
+      /** List all rooms */
+      .on("listRooms", function(data, fn) {
+        fn(Room.headers());
       })
 
-      /** List all rooms */
-      .on("listRooms", (data, fn) => {
-        fn(Room.headers());
+      /** Get room info before join */
+      .on("askToConnect", function(data, fn) {
+        let room = _.find(Room.list, data);
+        if(!room || room.isFull())
+          fn({ error: "Cannot is full!" });
+        else
+          fn({ isLocked: room.isLocked() });
+
+        /** Authorize to room */
+        this.on("authorizeToRoom", (data, fn) => {
+          if(room.checkPassword(data.pass)) {
+            // AUTHORIZED TO ROOM!!!
+            fn("Welcome in room :)");
+            self.room = room;
+          } else
+            fn({ error: "Incorrect password!" })
+        });
       })
 
       /** Disconnect from server */

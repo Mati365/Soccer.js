@@ -68,7 +68,7 @@ export default class Canvas {
       /** KEYBOARD LISTENERS */
       .on("keydown", e => {
         let isCharacter = e.which >= 65 && e.which <= 90;
-        if(isCharacter || e.which >= 48 && e.which <= 90 || _.contains([8, 32], e.which)) {
+        if(isCharacter || e.which >= 48 && e.which <= 90 || [8, 32].indexOf(e.which)+1) {
           this.broadcast(
             new Message(Message.Type.KEY_ENTER, this, e.which + (!e.shiftKey && isCharacter ? 32 : 0))
           );
@@ -85,7 +85,9 @@ export default class Canvas {
             e.clientX - this.context.size.x
           , e.clientY - this.context.size.y
         ];
-        mousePressed && this.broadcast(new Message(Message.Type.MOUSE_DRAG, this, mousePos));
+
+        this.context.domElement.style.cursor = "auto";
+        this.broadcast(new Message(Message.Type[mousePressed ? 'MOUSE_DRAG' : 'MOUSE_MOVE'], this, mousePos));
       })
 
       .translateEvent("click", Message.Type.MOUSE_CLICK, mousePos)
@@ -129,6 +131,11 @@ export default class Canvas {
     // Add parent
     state.canvas = this;
     state.init();
+
+    // Load resources
+    _.each(state.assets, (val, key) => {
+      this.context.loadResource(key, val);
+    });
     return this;
   }
 
@@ -149,8 +156,8 @@ export default class Canvas {
         let title = "Loading resources...";
         this.context
           .fillWith(Color.Hex.WHITE)
-          .setFontSize(32)
-          .drawText(title, new Vec2(this.context.size.w / 2 - this.context.textWidth(title) / 2, this.context.size.h / 2 - 6));
+          .setFontSize(16)
+          .drawText(title, new Vec2(this.context.size.w / 2 - this.context.textWidth(title) / 2, this.context.size.h - 18));
 
       } else {
         let state = this.states[this.activeState];

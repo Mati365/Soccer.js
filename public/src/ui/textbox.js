@@ -24,6 +24,10 @@ export default class TextBox extends Control {
   onEvent(event) {
     super.onEvent(event);
 
+    // Change mouse pointer if hover
+    if(event.type === Message.Type.MOUSE_MOVE && this._checkMouseEvent(event))
+      event.creator.context.domElement.style.cursor = "text";
+
     // Append to text box
     if(event.isKeyboardEvent() && this.hasFocus()) {
       switch(event.data) {
@@ -49,9 +53,10 @@ export default class TextBox extends Control {
     // Set timer once, only one UI object has focus so interval is only one
     if(!this.caretTimer && this.hasFocus()) {
       // Render caret
+      this.caretVisible = true;
       this.caretTimer = window.setInterval(() => {
         this.caretVisible = !this.caretVisible || false;
-      }, 300);
+      }, 200);
 
     } else if(this.caretTimer && !this.hasFocus()) {
       // Clear interval

@@ -60,7 +60,7 @@ export default class Control extends Child {
    */
   onEvent(event) {
     // TODO: Add more event types
-    if(!this._checkMouseEvent(event)) {
+    if(!this._checkMouseEvent(event) && event.type != Message.Type.MOUSE_MOVE) {
       this.state = 0;
       return false;
     }
@@ -70,7 +70,7 @@ export default class Control extends Child {
       this.layer.focus = this;
 
     // Set state only on mouse event, that helps with setting focus
-    if(event.isMouseEvent())
+    if(event.isMouseEvent() && event.type != Message.Type.MOUSE_MOVE)
       this.state = event.type;
 
     // Assign state and call callback

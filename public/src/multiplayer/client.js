@@ -15,7 +15,7 @@ export default {
     let resolver = (resolve, reject) => {
       socket.emit(func, data, callback => {
         if(!callback || callback.error)
-          reject(callback);
+          reject(callback.error);
         else
           resolve(callback);
       });

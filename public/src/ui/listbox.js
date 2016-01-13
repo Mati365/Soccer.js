@@ -19,6 +19,7 @@ export default class ListBox extends Layer {
     super(Layer.VBox, rect);
 
     this.multiselect = false;
+    this.lineHeight = 14;
     this.padding.xy = [0, 1];
   }
 
@@ -61,9 +62,11 @@ export default class ListBox extends Layer {
       .map(child => {
         return child.children.length === 1
           ? child.children[0].text
-          : _.map(child.children, _.partialRight(_.pick, 'text'));
+          : _.map(child.children, _.partial(_.get, _, "text"));
       })
       .thru(array => {
+        if(!array.length)
+          return null;
         return array.length && !this.multiselect ? array[0] : array;
       })
       .value();
@@ -108,6 +111,9 @@ export default class ListBox extends Layer {
    * @param opts  Opts
    */
   add(child, opts) {
+    child.rect.h = this.lineHeight;
+
+    // Add to panel
     super.add(child, opts || { fill: [1.0, .0] });
 
     // Manage scrollbar
@@ -138,7 +144,7 @@ export default class ListBox extends Layer {
  */
 ListBox.Item = class extends Radio {
   constructor(text) {
-    super(new Rect(0, 0, 0, 14), text);
+    super(new Rect, text);
     this.border.xy = [0, 1];
   }
 
@@ -170,7 +176,7 @@ ListBox.Item = class extends Radio {
  */
 ListBox.Row = class extends Layer {
   constructor() {
-    super(Layer.HBox, new Rect(0, 0, 0, 14));
+    super(Layer.HBox, new Rect);
 
     this.eventForwarding = false;
     this.padding.xy = [0, 0];

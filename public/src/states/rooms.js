@@ -21,8 +21,7 @@ export default class RoomList extends State {
   constructor() {
     super(Layer.VBox);
     this.table = new Table([
-        ["Name", .4]
-      , ["Admin", .2]
+        ["Name", .6]
       , ["Pass", .2]
       , ["Total", .2]
     ]);
@@ -44,7 +43,8 @@ export default class RoomList extends State {
         // Truncate title e.g. Gunwogunwo => Gunwo...
         data = _.chain(data)
           .values()
-          .map(_.partialRight(_.trunc, 5))
+          // TODO: it may cause error with auth to server
+          //.map(_.partial(_.truncate, _, { length: 26 }))
           .value();
 
         // Add new row to ListBox inside table
@@ -55,6 +55,30 @@ export default class RoomList extends State {
       .emit("listRooms")
       .then(reloadList)
       .catch(_.partial(console.log, "Cannot fetch list of channels..."));
+  }
+
+  /**
+   * Join to room
+   * @param roomName  Name of room
+   * @private
+   */
+  _joinRoom(roomName) {
+    Client
+      .emit("askToConnect", { name: roomName })
+      // Authorize with password, empty if not
+      .then(data => {
+        return data.isLocked && Popup.input(this, "Password:") || "";
+      })
+      .then(password => {
+        return Client.emit("authorizeToRoom", { pass: password });
+      })
+      // Redirect to new state
+      .then(() => {
+        this.canvas.activeState = "board";
+      })
+
+      // Show server error
+      .catch(_.partial(Popup.confirm, this));
   }
 
   /** @inheritdoc */
@@ -74,20 +98,19 @@ export default class RoomList extends State {
     toolbar
       .add(new Button(new Rect(0, 0, 90, 16), "Create"))
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
-        this.showPopup(new RoomList.CreatorPopup());
+        this.showPopup(new RoomList.CreatorPopup);
       });
 
     // Create room button
     toolbar
       .add(new Button(new Rect(0, 0, 90, 16), "Join"))
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
-      });
-
-    Popup
-      .input(this, "Enter nick")
-      .then(_.partial(Client.emit, "setNick"))
-      .then(data => {
-        console.log(data);
+        // Join to selected room
+        let selectedRow = this.table.listbox.selected;
+        if(selectedRow)
+          this._joinRoom(selectedRow[0]);
+        else
+          Popup.confirm(this, "Choose room first!");
       });
   }
 };
@@ -110,7 +133,7 @@ RoomList.CreatorPopup = class extends Popup {
     };
     Client
       .emit("createRoom", data)
-      .then(_.partial(Popup.confirm, this, "Success!"))
+      .then(_.partial(Popup.confirm, this, "Success!", Popup.Type.OK))
       .then(() => {
         this.layer._reloadRoomList();
         this.hide();
@@ -132,10 +155,9 @@ RoomList.CreatorPopup = class extends Popup {
 
     // Creator row
     this.hidden = this.add(new Radio(new Rect(0, 0, 16, 14), "Hidden"));
-    this.add(
-      new Button(new Rect(0, 0, 118, 16), "Create room!")
-        .addForwarder(Message.Type.MOUSE_CLICK, this.createRoom.bind(this))
-    );
+    this
+      .add(new Button(new Rect(0, 0, 118, 16), "Create room!"))
+      .addForwarder(Message.Type.MOUSE_CLICK, this.createRoom.bind(this));
 
     this.players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 118, 110)), { expand: 2, fill: [1.0, .0] });
     this.players

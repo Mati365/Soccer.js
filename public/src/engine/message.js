@@ -39,10 +39,11 @@ Message.Type = {
   , MOUSE_UP:     2
   , MOUSE_DRAG:   3
   , MOUSE_SCROLL: 4
-  , MOUSE_CLICK:  5
+  , MOUSE_MOVE:   5
+  , MOUSE_CLICK:  6
 
   // Keyboard Events
-  , KEY_DOWN:     6
-  , KEY_UP:       7
-  , KEY_ENTER:    8
+  , KEY_DOWN:     7
+  , KEY_UP:       8
+  , KEY_ENTER:    9
 };
