@@ -1,5 +1,6 @@
 "use strict";
 const md5 = require("blueimp-md5")
+    , io = require("socket.io")
     , _ = require("lodash");
 
 const { Vec2, Circle } = require("../shared/math");
@@ -26,12 +27,21 @@ class Room {
 
     this.ball = new Body(16, 16, 16);
     this.teams = {
-      spectators: []
+        spectators: []
+      , left: []
+      , right: []
     };
 
     // hide room in rooms list
     if(hidden !== true)
       (Room.list = Room.list || []).push(this);
+  }
+
+  /**
+   * Get teams with players nicks
+   */
+  get teamsHeaders() {
+    return _.mapValues(this.teams, _.partial(_.get, _, "nick"));
   }
 
   /**
@@ -133,15 +143,25 @@ class Room {
 
   /**
    * Join to room
-   * @param player
+   * @param player  Player
    * @returns {Room}
    */
   join(player) {
-    player.socket.join(this.name);
     player.room = this;
+    player.socket.join(this.name);
 
     this.teams.spectators.push(player);
     return this;
+  }
+
+  /**
+   * Leave player from room
+   * @param player  Player
+   */
+  leave(player) {
+    // Slow but short
+    _.each(this.teams, _.partial(_.remove, _, player));
+    this.admin === player && this.destroy();
   }
 
   /**

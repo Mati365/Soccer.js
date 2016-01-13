@@ -97,11 +97,12 @@ export class Layer extends Child {
   showPopup(popup) {
     // Center popup on screen
     if(popup) {
-      popup.layer = this;
-      popup.rect.xy = [
-          this.rect.w / 2 - popup.rect.w / 2
-        , this.rect.h / 2 - popup.rect.h / 2
-      ];
+      this
+        ._makeChildOwner(popup)
+        .rect.xy = [
+            this.rect.w / 2 - popup.rect.w / 2
+          , this.rect.h / 2 - popup.rect.h / 2
+        ];
     }
     return this.popup = popup;
   }
@@ -126,13 +127,24 @@ export class Layer extends Child {
   }
 
   /**
+   * Make object as a child
+   * @param child Child
+   * @returns {Child}
+   * @private
+   */
+  _makeChildOwner(child) {
+    child.layer = this;
+    child.canvas = this.canvas;
+    return child;
+  }
+  /**
    * Add child to layer
    * @param child Child
    * @param opts  Layout options
    * @returns {Child}
    */
   add(child, opts) {
-    child.layer = this;
+    this._makeChildOwner(child);
 
     // If layout is present use it to organise position
     if(this.layout) {

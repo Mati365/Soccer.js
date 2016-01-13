@@ -63,10 +63,15 @@ class Player {
           if(room.checkPassword(data.pass)) {
             // AUTHORIZED TO ROOM!!!
             fn("Welcome in room :)");
-            self.room = room;
+            room.join(self);
           } else
             fn({ error: "Incorrect password!" })
         });
+      })
+
+      /** Get room teams */
+      .on("roomTeams", (data, fn) => {
+        this.room && fn(this.room.teamsHeaders);
       })
 
       /** Disconnect from server */
@@ -103,8 +108,7 @@ class Player {
    * @param player
    */
   static remove(player) {
-    if(player.room && player.room.admin === player)
-      player.room.destroy();
+    player.room && player.room.leave(player);
     _.remove(Player.list, player);
   }
 }

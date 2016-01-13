@@ -20,7 +20,9 @@ export default class ListBox extends Layer {
 
     this.multiselect = false;
     this.lineHeight = 14;
+
     this.padding.xy = [0, 1];
+    this.border.xy = [5, 5];
   }
 
   /** @inheritdoc */

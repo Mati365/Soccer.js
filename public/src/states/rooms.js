@@ -133,14 +133,16 @@ RoomList.CreatorPopup = class extends Popup {
     };
     Client
       .emit("createRoom", data)
+
+      // After created
       .then(_.partial(Popup.confirm, this, "Success!", Popup.Type.OK))
       .then(() => {
-        this.layer._reloadRoomList();
         this.hide();
+        this.canvas.activeState = "board";
       })
-      .catch(e => {
-        Popup.confirm(this, e.error);
-      });
+
+      // On error
+      .catch(_.partial(Popup.confirm, this));
   }
 
   /** @inheritdoc */
