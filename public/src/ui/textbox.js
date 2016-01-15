@@ -45,10 +45,7 @@ export default class TextBox extends Control {
   draw(context) {
     // Draw text
     let fontSize = this.rect.h * 0.9;
-    context
-      .setFontSize(fontSize)
-      .strokeWith(Color.Hex.WHITE)
-      .strokeRect(this.rect);
+    context.setFontSize(fontSize);
 
     // Set timer once, only one UI object has focus so interval is only one
     if(!this.caretTimer && this.hasFocus()) {
@@ -80,7 +77,10 @@ export default class TextBox extends Control {
       .drawText(text, new Vec2(
           this.rect.x + 5
         , this.rect.y + this.rect.h / 2 + fontSize * .4
-      ));
+      ))
+      // Draw border
+      .strokeWith(Color.Hex.WHITE)
+      .strokeRect(this.rect);
 
     // Render caret
     if(this.caretVisible)

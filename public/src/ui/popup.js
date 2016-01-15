@@ -32,13 +32,13 @@ export default class Popup extends Layer {
   static input(layer, title) {
     return new Promise(resolve => {
       let popup = layer.showPopup(new Popup(Layer.HBox, new Rect(0, 0, 300, 70), title))
-        , textBox = new TextBox(new Rect(0, 0, 0, 16));
+        , textBox = new TextBox(new Rect(0, 0, 0, 20));
 
       textBox.border.x = 0;
       popup.add(textBox, { fill: [.8, .0] });
 
       popup
-        .add(new Button(new Rect(0, 0, 0, 16), "Ok"), { fill: [.2, .0] })
+        .add(new Button(new Rect(0, 0, 0, 20), "Ok"), { fill: [.2, .0] })
         .addForwarder(Message.Type.MOUSE_CLICK, () => {
           popup.hide() && resolve(textBox.text);
         });
@@ -84,16 +84,12 @@ export default class Popup extends Layer {
     context
       // Fill in
       .fillWith(Color.Hex.BLACK)
-      .fillRect(this.rect)
-
-      // Draw border
-      .strokeWith(Color.Hex.GREEN)
-      .strokeRect(this.rect);
+      .fillRect(this.rect);
 
       // Write popup title
     if(this.title)
       context
-        .fillWith(Color.Hex.GREEN)
+        .fillWith(Color.Hex.WHITE)
         .setFontSize(15)
         .drawText(this.title, new Vec2(
             this.rect.x + this.padding.x

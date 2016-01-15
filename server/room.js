@@ -21,16 +21,19 @@ class Body extends Circle {
 class Room {
   constructor(name, admin, maxPlayers, password, hidden) {
     this.name = name;
-    this.admin = admin;
     this.maxPlayers = maxPlayers || 2;
     this.password =  md5(password);
 
-    this.ball = new Body(16, 16, 16);
+    // Players
     this.teams = {
         spectators: []
       , left: []
       , right: []
     };
+    this.admin = this.join(admin);
+
+    // Ball is separated object
+    this.ball = new Body(16, 16, 16);
 
     // hide room in rooms list
     if(hidden !== true)
@@ -142,26 +145,62 @@ class Room {
   }
 
   /**
+   * Broadcast to all sockets connected to room
+   * @param arguments Broadcast arguments
+   * @returns {Room}
+   */
+  broadcast() {
+    let obj = io.sockets.in(this.name);
+    obj.apply(obj, arguments);
+    return this;
+  }
+
+  /**
    * Join to room
    * @param player  Player
    * @returns {Room}
    */
   join(player) {
+    // Adding to list
     player.room = this;
     player.socket.join(this.name);
-
     this.teams.spectators.push(player);
-    return this;
+
+    // Broadcast to except player
+    player.socket.broadcast.to(this.name).emit("roomPlayerJoin", {
+        team: "spectators"
+      , nick: player.nick
+    });
+
+    // Send list of players to player
+    player.socket.emit("roomPlayerList", {
+        spectators: ["kutas", "debil"]
+      , left: ["debil2", "debil3"]
+      , right: ["debil2", "debil3"]
+    });
+    return player;
   }
 
   /**
    * Leave player from room
    * @param player  Player
+   * @returns {Room}
    */
   leave(player) {
     // Slow but short
-    _.each(this.teams, _.partial(_.remove, _, player));
+    _.each(this.teams, (team, title) => {
+      if(!_.remove(team, player).length)
+        return true;
+
+      // Broadcast
+      this.broadcast("roomPlayerLeave", {
+          team: title
+        , nick: player.nick
+      });
+      return false;
+    });
     this.admin === player && this.destroy();
+    return this;
   }
 
   /**
