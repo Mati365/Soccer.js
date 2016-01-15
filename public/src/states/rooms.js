@@ -117,7 +117,7 @@ export default class RoomList extends State {
 
 RoomList.CreatorPopup = class extends Popup {
   constructor() {
-    super(Layer.GridBox(2, 7), new Rect(0, 0, 256, 300), "Room creator");
+    super(Layer.GridBox(2, 7), new Rect(0, 0, 350, 300), "Room creator");
   }
 
   /**
@@ -149,11 +149,11 @@ RoomList.CreatorPopup = class extends Popup {
   init() {
     // Room name row
     this.add(new Text(new Rect(0, 0, 0, 14), "Room name:"));
-    this.name = this.add(new TextBox(new Rect(0, 0, 118, 16)));
+    this.name = this.add(new TextBox(new Rect(0, 0, 0, 16)), { fill: [.5, .0] });
 
     // Password row
     this.add(new Text(new Rect(0, 0, 0, 14), "Password:"));
-    this.pass = this.add(new TextBox(new Rect(0, 0, 118, 16)));
+    this.pass = this.add(new TextBox(new Rect(0, 0, 0, 16)), { fill: [.5, .0] });
 
     // Creator row
     this.hidden = this.add(new Radio(new Rect(0, 0, 16, 14), "Hidden"));
@@ -161,7 +161,8 @@ RoomList.CreatorPopup = class extends Popup {
       .add(new Button(new Rect(0, 0, 118, 16), "Create room!"))
       .addForwarder(Message.Type.MOUSE_CLICK, this.createRoom.bind(this));
 
-    this.players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 118, 110)), { expand: 2, fill: [1.0, .0] });
+    // Max players count
+    this.players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 0, 110)), { fill: [1.0, .0] });
     this.players
       .setRows([
         ["2"], ["4"], ["6"], ["8"], ["10"], ["12"], ["16"], ["18"]

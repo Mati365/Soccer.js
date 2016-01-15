@@ -121,7 +121,7 @@ export default class Canvas {
 
     // Set state and init
     this.states[name] = state;
-    if(setDefault)
+    if(setDefault || _.size(this.states) === 1)
       this.activeState = name;
 
     // Copy size of parent

@@ -17,9 +17,7 @@ export default class Table extends Layer {
     // Initialise table
     this.init = () => {
       // List of headers
-      this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 16)), { fill: [1.0, 0]});
-      this.header.padding.xy = [0, 0];
-      this.header.border.y = 5;
+      this.header = super.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 16)), { fill: [1.0, 0] });
 
       // ListBox with ScrollBar
       this.listbox = super.add(new ListBox, { fill: [1.0, .9] });

@@ -9,7 +9,9 @@ import Message from "./message";
 export class Child {
   constructor(rect) {
     this.rect = rect;
+
     this.border = new Vec2;
+    this.padding = new Vec2;
   }
 
   /**
@@ -44,7 +46,7 @@ export class Layer extends Child {
     this.popup = null;
 
     // Spacing between items in  layout
-    this.padding = new Vec2(5, 5);
+    this.border.xy = [2, 2];
     this.layout = layout;
 
     // If false children wont receive any events
@@ -75,7 +77,7 @@ export class Layer extends Child {
   }
 
   /**
-   * Reassign children positions after remove
+   * Reassign children positions after remove, only for VBOX/HBOX
    * and add in linear layouts
    * @private
    */
@@ -150,19 +152,12 @@ export class Layer extends Child {
     if(this.layout) {
       let padding = this._genChildPadding(child);
 
-      // Optional layout params
-      if(opts && opts.fill) {
-        // Placement of child
-        child.rect.wh = [
-            opts.fill[0] ? (this.rect.w * opts.fill[0] - this.padding.x * 2) : child.rect.w
-          , opts.fill[1] ? (this.rect.h * opts.fill[1] - this.padding.y * 2) : child.rect.h
-        ];
-      }
+      // Change border of child
+      if(opts && !_.isUndefined(opts.border))
+        child.border.xy = !opts.border ? [0, 0] : opts.border;
 
       // Remove optional opts
       if(!opts || opts.useLayout !== false) {
-        opts = _.omit(opts, ["fill", "useLayout"]);
-
         // Use layout placement
         child.rect.xy = this.layout(child, _.last(this.children), opts) || padding.xy;
 
@@ -170,6 +165,25 @@ export class Layer extends Child {
         child.rect.xy = [
             parseInt(child.rect.x)
           , parseInt(child.rect.y)
+        ];
+      }
+
+      // Optional layout params
+      if(opts && opts.fill) {
+        // Calc filling size for every axis
+        let calcInnerSize = axis => {
+          let fill = opts.fill[+(axis === "y")]
+            , sizeParam = axis === "y" ? "h" : "w";
+          if(fill)
+            return Math.min(this.rect[sizeParam] - child.rect[axis] - padding[axis], (this.rect[sizeParam] - padding[axis] * 2) * fill);
+          else
+            return child.rect[sizeParam];
+        };
+
+        // Placement of child
+        child.rect.wh = [
+            parseInt(calcInnerSize("x"))
+          , parseInt(calcInnerSize("y"))
         ];
       }
     }
@@ -182,6 +196,11 @@ export class Layer extends Child {
 
   /** @inheritdoc */
   draw(context) {
+    if(this.debugLayer)
+      context
+        .strokeWith("#00ff00")
+        .strokeRect(this.rect);
+
     context.ctx.save();
     context.ctx.translate(this.rect.x, this.rect.y);
 
@@ -257,10 +276,16 @@ export class Layer extends Child {
 
 /** Horizontal/Vertical box */
 Layer.HBox = function(child, prev) {
-  return prev && prev.rect.clone().add(new Vec2(prev.rect.w + prev.border.x + child.border.x, 0)).xy;
+  return prev &&
+    [ prev.rect.x + prev.rect.w + prev.border.x + child.border.x
+    , this.padding.y + child.border.y
+    ];
 };
 Layer.VBox = function(child, prev) {
-  return prev && prev.rect.clone().add(new Vec2(0, prev.rect.h + prev.border.y + child.border.y)).xy;
+  return prev &&
+    [ this.padding.x + child.border.x
+    , prev.rect.y + prev.rect.h + prev.border.y + child.border.y
+    ];
 };
 
 /** Titled list e.g. forms */

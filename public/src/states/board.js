@@ -8,6 +8,7 @@ import Popup from "../ui/popup";
 
 import { Button } from "../ui/button";
 import ListBox from "../ui/listbox";
+import Table from "../ui/table";
 
 import Client from "../multiplayer/client";
 
@@ -40,14 +41,19 @@ Board.SettingsPopup = class extends Popup {
   init() {
     let teamsBox = this.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 200)), { fill: [1.0, 0.0] });
 
-    this.left = teamsBox.add(new ListBox, { fill: [.3, 1.0] });
+    // Left
+    this.left = teamsBox.add(new Table([["Left", 1.0]]), { fill: [.33, 1.0] });
 
-    let toolbox = teamsBox.add(new Layer(Layer.VBox), { fill: [.3, 1.0] });
-    toolbox.add(new Button(new Rect(0, 0, 0, 16), "<"), { fill: [1.0, .0] });
-    toolbox.add(new Button(new Rect(0, 0, 0, 16), ">"), { fill: [1.0, .0] });
-    this.spectators = toolbox.add(new ListBox, { fill: [.3, 1.0] });
+    // Toolbox
+    let toolbox = teamsBox.add(new Layer(Layer.VBox), { fill: [.34, 1.0] });
 
-    this.right = teamsBox.add(new ListBox, { fill: [.3, 1.0] });
+    // Spectators
+    toolbox.add(new Button(new Rect, "<"), { fill: [1.0, .1] });
+    toolbox.add(new Button(new Rect, ">"), { fill: [1.0, .1] });
+    this.spectators = toolbox.add(new ListBox(new Rect(0, 0, 0, teamsBox.rect.h - 64)), { fill: [1.0, .8] });
+
+    // Right
+    this.right = teamsBox.add(new Table([["Right", 1.0]]), { fill: [.33, 1.0] });
 
     this.makeCloseable();
   }

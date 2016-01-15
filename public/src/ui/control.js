@@ -10,7 +10,7 @@ export default class Control extends Child {
     this.forwarder = {};
     this.state = null;
     this.disabled = false;
-    this.border.xy = [5, 5];
+    this.border.xy = [2, 2];
   }
 
   /**

@@ -23,8 +23,8 @@ export default class Context {
     // Create canvas if DOM selector is not provided
     if(!selector) {
       this.domElement = $("<canvas />").prop({
-          width: 600
-        , height: 400
+          width: 800
+        , height: 500
         , tabindex: 0
       })[0];
       $("body").append(this.domElement);
