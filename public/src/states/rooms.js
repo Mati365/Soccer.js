@@ -25,8 +25,6 @@ export default class RoomList extends State {
       , ["Pass", .2]
       , ["Total", .2]
     ]);
-
-    this._reloadRoomList();
   }
 
   /**
@@ -112,6 +110,9 @@ export default class RoomList extends State {
         else
           Popup.confirm(this, "Choose room first!");
       });
+
+    // Reload rooms
+    this._reloadRoomList();
   }
 };
 
@@ -164,9 +165,7 @@ RoomList.CreatorPopup = class extends Popup {
     // Max players count
     this.players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 0, 110)), { fill: [1.0, .0] });
     this.players
-      .setRows([
-        ["2"], ["4"], ["6"], ["8"], ["10"], ["12"], ["16"], ["18"]
-      ])
+      .setRows(["2", "4", "6", "8", "10", "12", "16", "18"])
       .listbox.setSelectedIndex(1);
 
     this.makeCloseable();

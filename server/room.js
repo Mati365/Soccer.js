@@ -1,9 +1,9 @@
 "use strict";
 const md5 = require("blueimp-md5")
-    , io = require("socket.io")
     , _ = require("lodash");
 
-const { Vec2, Circle } = require("../shared/math");
+const { Vec2, Circle } = require("../shared/math")
+    , io = require("./server");
 
 /**
  * Room body
@@ -44,7 +44,7 @@ class Room {
    * Get teams with players nicks
    */
   get teamsHeaders() {
-    return _.mapValues(this.teams, _.partial(_.get, _, "nick"));
+    return _.mapValues(this.teams, _.partial(_.map, _, "nick"));
   }
 
   /**
@@ -133,14 +133,15 @@ class Room {
    * @returns {Room}
    */
   setTeam(player, newTeam) {
-    console.assert(this.teams[newTeam], `Team ${newTeam} not exists!`);
-
     // Remove from old team
     player.team && _.remove(player.team, player);
 
     // Add to new team
-    player.team = this.teams[newTeam];
+    player.team = this.teams[newTeam || "spectators"];
     player.team.push(player);
+
+    // Reload teams
+    newTeam && this._reloadTeams();
     return this;
   }
 
@@ -151,7 +152,18 @@ class Room {
    */
   broadcast() {
     let obj = io.sockets.in(this.name);
-    obj.apply(obj, arguments);
+    obj && obj.emit.apply(obj, arguments);
+    return this;
+  }
+
+  /**
+   * Send list players teams
+   * @param socket  Socket
+   * @returns {Room}
+   * @private
+   */
+  _reloadTeams(socket) {
+    (socket ? socket.emit.bind(socket) : this.broadcast.bind(this))("roomPlayerList", this.teamsHeaders);
     return this;
   }
 
@@ -164,7 +176,7 @@ class Room {
     // Adding to list
     player.room = this;
     player.socket.join(this.name);
-    this.teams.spectators.push(player);
+    this.setTeam(player);
 
     // Broadcast to except player
     player.socket.broadcast.to(this.name).emit("roomPlayerJoin", {
@@ -173,11 +185,7 @@ class Room {
     });
 
     // Send list of players to player
-    player.socket.emit("roomPlayerList", {
-        spectators: ["kutas", "debil"]
-      , left: ["debil2", "debil3"]
-      , right: ["debil2", "debil3"]
-    });
+    this._reloadTeams(player.socket);
     return player;
   }
 
@@ -187,18 +195,15 @@ class Room {
    * @returns {Room}
    */
   leave(player) {
-    // Slow but short
-    _.each(this.teams, (team, title) => {
-      if(!_.remove(team, player).length)
-        return true;
+    if(!player.team)
+      return;
 
-      // Broadcast
-      this.broadcast("roomPlayerLeave", {
-          team: title
-        , nick: player.nick
-      });
-      return false;
+    this.broadcast("roomPlayerLeave", {
+        team: _.findKey(player.team)
+      , nick: player.nick
     });
+
+    _.remove(player.team, player);
     this.admin === player && this.destroy();
     return this;
   }

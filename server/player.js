@@ -2,7 +2,8 @@
 const validate = require("validate.js")
     , _ = require("lodash");
 
-const { Room } = require("./room");
+const { Room } = require("./room")
+    , io = require("./server");
 
 /**
  * Player socket class
@@ -69,6 +70,12 @@ class Player {
         });
       })
 
+      /** Set player team */
+      .on("setTeam", data => {
+        let player = Player.nick(data.nick);
+        player && player.team && player.room.setTeam(player, data.team);
+      })
+
       /** Get room teams */
       .on("roomTeams", (data, fn) => {
         this.room && fn(this.room.teamsHeaders);
@@ -111,9 +118,20 @@ class Player {
     player.room && player.room.leave(player);
     _.remove(Player.list, player);
   }
+
+  /**
+   * Get player by nick
+   * @param nick Player's nick
+   * @returns Player
+   */
+  static nick(nick) {
+    return _.find(Player.list, { nick: nick });
+  }
 }
 
 /** List of all players */
 Player.list = [];
+io.on("connection", Player.create);
 
+/** Export */
 module.exports = Player;

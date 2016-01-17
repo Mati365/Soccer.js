@@ -73,9 +73,11 @@ export default class Table extends Layer {
     let row = this.listbox.add(new ListBox.Row);
 
     // Add each column to row
-    _.each(values, (column, index) => {
-      row.add(new ListBox.Item(column), { fill: [this.columns[index], 1.0] });
-    });
+    _.each(
+        this.header.children.length === 1 ? [values] : values
+      , (column, index) => {
+        row.add(new ListBox.Item(column), { fill: [this.columns[index], 1.0] });
+      });
     return row;
   }
 }

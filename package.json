@@ -2,10 +2,10 @@
   "name": "hax.js",
   "version": "1.0.0",
   "description": "Simple haxball clone written in ES6",
-  "main": "server/main.js",
+  "main": "server/player.js",
   "scripts": {
-    "start": "node --harmony-destructuring server/main.js",
-    "watch": "nodemon --harmony-destructuring server/main.js"
+    "start": "node --harmony-destructuring server/player.js",
+    "watch": "nodemon --harmony-destructuring server/player.js"
   },
   "repository": {
     "type": "git",

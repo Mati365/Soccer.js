@@ -7,6 +7,8 @@ import { Vec2 } from "shared/math";
 import Context from "./context";
 import Message from "./message";
 
+import Client from "../multiplayer/client";
+
 /**
  * Main renderer class
  * @class
@@ -133,9 +135,12 @@ export default class Canvas {
     state.init();
 
     // Load resources
-    _.each(state.assets, (val, key) => {
-      this.context.loadResource(key, val);
-    });
+    _.each(state.assets, (val, key) =>  this.context.loadResource(key, val));
+
+    // Open listeners
+    _.each(state.listeners, (callback, func) =>
+      Client.socket.on(func, callback.bind(state))
+    );
     return this;
   }
 

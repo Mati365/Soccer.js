@@ -310,8 +310,8 @@ Layer.GridBox = function(cols, rows) {
 /** Border box */
 Layer.BorderBox = function(child, prev, opts) {
   return [
-      Math.max(0, Math.min(this.rect.w * opts.align[0] - child.rect.w / 2, this.rect.w - child.rect.w))
-    , Math.max(0, Math.min(this.rect.h * opts.align[1] - child.rect.h / 2, this.rect.h - child.rect.h))
+      Math.max(this.padding.x, Math.min(this.rect.w * opts.align[0] - child.rect.w / 2, this.rect.w - child.rect.w - this.padding.x))
+    , Math.max(this.padding.y, Math.min(this.rect.h * opts.align[1] - child.rect.h / 2, this.rect.h - child.rect.h - this.padding.y))
   ];
 };
 
@@ -320,6 +320,6 @@ Layer.BorderBox = function(child, prev, opts) {
  * @class
  */
 export class State extends Layer {
-  /** Init state, register resources */
-  init() {}
+  /** Init listeners */
+  get listeners() {}
 }
