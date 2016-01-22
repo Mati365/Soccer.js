@@ -25,11 +25,7 @@ class Room {
     this.password =  md5(password);
 
     // Players
-    this.teams = {
-        spectators: []
-      , left: []
-      , right: []
-    };
+    this.players = [];
     this.admin = this.join(admin);
 
     // Ball is separated object
@@ -44,7 +40,11 @@ class Room {
    * Get teams with players nicks
    */
   get teamsHeaders() {
-    return _.mapValues(this.teams, _.partial(_.map, _, "nick"));
+    return _
+      .chain(this.players)
+      .groupBy("team")
+      .mapValues(_.partial(_.map, _, "nick"))
+      .value();
   }
 
   /**
@@ -78,10 +78,11 @@ class Room {
    * @returns {Room}
    */
   kick(player) {
-    player.socket
-      .emit("kickFromRoom", "You are kicked!")
+    player
+      .socket
+      .emit("roomKick", "You are kicked!")
       .leave(this.name);
-    player.room = null;
+    this.leave(player);
     return this;
   }
 
@@ -133,15 +134,10 @@ class Room {
    * @returns {Room}
    */
   setTeam(player, newTeam) {
-    // Remove from old team
-    player.team && _.remove(player.team, player);
-
-    // Add to new team
-    player.team = this.teams[newTeam || "spectators"];
-    player.team.push(player);
+    player.team = newTeam || "spectators";
 
     // Reload teams
-    newTeam && this._reloadTeams();
+    newTeam && this._broadcastPlayers();
     return this;
   }
 
@@ -162,7 +158,7 @@ class Room {
    * @returns {Room}
    * @private
    */
-  _reloadTeams(socket) {
+  _broadcastPlayers(socket) {
     (socket ? socket.emit.bind(socket) : this.broadcast.bind(this))("roomPlayerList", this.teamsHeaders);
     return this;
   }
@@ -176,6 +172,8 @@ class Room {
     // Adding to list
     player.room = this;
     player.socket.join(this.name);
+
+    this.players.push(player);
     this.setTeam(player);
 
     // Broadcast to except player
@@ -185,7 +183,7 @@ class Room {
     });
 
     // Send list of players to player
-    this._reloadTeams(player.socket);
+    this._broadcastPlayers(player.socket);
     return player;
   }
 
@@ -198,12 +196,13 @@ class Room {
     if(!player.team)
       return;
 
-    this.broadcast("roomPlayerLeave", {
-        team: _.findKey(player.team)
-      , nick: player.nick
-    });
+    // Leave
+    this.broadcast("roomPlayerLeave", _.pick(player, "team", "nick"));
 
-    _.remove(player.team, player);
+    // Reset variables for future room
+    player.room = player.team = null;
+
+    _.remove(this.players, player);
     this.admin === player && this.destroy();
     return this;
   }

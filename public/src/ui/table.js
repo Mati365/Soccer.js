@@ -80,4 +80,18 @@ export default class Table extends Layer {
       });
     return row;
   }
+
+  /**
+   * Remove element from list, if text remove child with text column
+   * @param obj
+   * @return {Row}
+   */
+  remove(obj) {
+    if(_.isString(obj))
+      obj = _.filter(this.listbox.children, child => {
+        return child.children[0].text == obj;
+      })[0];
+
+    return this.listbox.remove(obj);
+  }
 }

@@ -76,6 +76,12 @@ class Player {
         player && player.team && player.room.setTeam(player, data.team);
       })
 
+      /** Kick player from room */
+      .on("roomKick", nick => {
+        this.room && this.room.kick(Player.nick(nick));
+      })
+
+
       /** Get room teams */
       .on("roomTeams", (data, fn) => {
         this.room && fn(this.room.teamsHeaders);

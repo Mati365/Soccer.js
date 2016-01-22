@@ -107,6 +107,28 @@ export default class ListBox extends Layer {
   }
 
   /**
+   * Calc visible rows
+   * @returns {ListBox}
+   * @private
+   */
+  _calcVisibleRows() {
+    // Manage scrollbar
+    this.scrollbar.setTotal(this.children.length - 1);
+    if(!this.scrollbar.visible)
+      this.scrollbar.visible = Math.floor(this.rect.h / this.lineHeight);
+
+    // Overflow is hidden
+    this.setVisibleChildren(0, this.scrollbar.visible);
+    return this;
+  }
+
+  /** @inheritdoc */
+  _reloadLayout() {
+    this._calcVisibleRows();
+    return super._reloadLayout();
+  }
+
+  /**
    * Add list item
    * @param child List Item
    * @param opts  Opts
@@ -116,14 +138,7 @@ export default class ListBox extends Layer {
 
     // Add to panel
     super.add(child, opts || { fill: [1.0, .0] });
-
-    // Manage scrollbar
-    this.scrollbar.setTotal(this.children.length);
-    if(!this.scrollbar.visible)
-      this.scrollbar.visible = Math.floor(this.rect.h / child.rect.h);
-
-    // Overflow is hidden
-    this.setVisibleChildren(0, this.scrollbar.visible);
+    this._calcVisibleRows();
     return child;
   }
 

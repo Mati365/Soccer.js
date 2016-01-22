@@ -25,7 +25,7 @@ export default class Context {
       this.domElement = $("<canvas />").prop({
           width: 600
         , height: 400
-        , tabindex: 0
+        , tabindex: 1
       })[0];
       $("body").append(this.domElement);
 
@@ -70,6 +70,17 @@ export default class Context {
         }
       </style>`
     );
+  }
+
+  /**
+   * Render sprite
+   * @param resource  Resource name
+   * @param rect      Position and size
+   * @returns {Context}
+   */
+  drawImage(resource, rect) {
+    this.ctx.drawImage(this.resources[resource], rect.x, rect.y, rect.w, rect.h);
+    return this;
   }
 
   /**

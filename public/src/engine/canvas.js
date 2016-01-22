@@ -64,6 +64,9 @@ export default class Canvas {
       this.broadcast(new Message(Message.Type.MOUSE_SCROLL, this, new ScrollAmount(mousePos.x, mousePos.y)));
     };
 
+    // Pressed keys
+    this.pressedKeys = {};
+
     // Cached mouse position
     let mousePos = new Vec2;
     domInstance
@@ -76,6 +79,14 @@ export default class Canvas {
           );
           e.preventDefault();
         }
+
+        // Mark as pressed
+        this.pressedKeys[e.which] = true;
+        this.broadcast(new Message(Message.Type.KEY_DOWN, this, e.which));
+      })
+      .on("keyup", e => {
+        // Mark as unset
+        this.pressedKeys[e.which] = false;
       })
 
        /** MOUSE SCROLL */
