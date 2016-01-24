@@ -29,7 +29,7 @@ export default class TextBox extends Control {
       event.creator.context.domElement.style.cursor = "text";
 
     // Append to text box
-    if(this.hasFocus() && event.data === Message.Type.KEY_ENTER) {
+    if(this.hasFocus() && event.type === Message.Type.KEY_ENTER) {
       switch(event.data) {
         case 8:   this.text = this.text.slice(0, -1); break;  /** BACKSPACE */
         case 13:  this.state = 0;                     break;  /** ENTER */

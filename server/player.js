@@ -2,7 +2,8 @@
 const validate = require("validate.js")
     , _ = require("lodash");
 
-const { Room } = require("./room")
+const { Vec2, Circle } = require("../shared/math")
+    , { Room } = require("./room")
     , io = require("./server");
 
 /**
@@ -13,7 +14,19 @@ class Player {
     this.socket = socket;
     this.room = null;
 
+    this.initBody();
     this._initListener();
+  }
+
+  /**
+   * Initialise engine body
+   * @returns Body
+   */
+  initBody() {
+    return this.body = {
+        circle: new Circle(0, 0, 32)
+      , v: new Vec2
+    };
   }
 
   /**
@@ -81,10 +94,20 @@ class Player {
         this.room && this.room.kick(Player.nick(nick));
       })
 
+      /** Room start */
+      .on("roomStart", () => {
+        this.room && this.room.start();
+      })
 
       /** Get room teams */
       .on("roomTeams", (data, fn) => {
         this.room && fn(this.room.teamsHeaders);
+      })
+
+      /** Move body */
+      .on("move", dir => {
+        if(this.body && this.body.v.length <= 3.)
+          this.body.v.add(dir);
       })
 
       /** Disconnect from server */

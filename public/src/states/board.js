@@ -13,6 +13,19 @@ import Table from "../ui/table";
 import Message from "../engine/message";
 import Client from "../multiplayer/client";
 
+///** Only for debug */
+let d = {
+  name: "debug room"
+  , pass: ""
+  , hidden: false
+  , players: 8
+};
+Client
+  .emit("setNick", "debug player")
+  .then(Client.emit("createRoom", d))
+  .then(Client.emit("setTeam", { nick: "debug player", team: "left" }))
+  .then(Client.emit("roomStart"));
+
 /**
  * Core game state, it shows rooms gameplay
  * @class
@@ -38,8 +51,12 @@ export default class Board extends State {
   get listeners() {
     let listeners = {};
     // Fetch all players from all teams
-    listeners['roomPlayerList'] = data => {
-      _.each(this.settings.teams, (listBox, key) => listBox.setRows(data[key] || []));
+    listeners['roomSettings'] = data => {
+      // Load teams
+      _.each(this.settings.teams, (listBox, key) => listBox.setRows(data.teams[key] || []));
+
+      // Get board list
+      this.board = data.board;
     };
 
     // Fetch joining player
@@ -58,6 +75,13 @@ export default class Board extends State {
         this.canvas.activeState = "roomList";
       });
     };
+
+    // Get room changes
+    listeners['roomUpdate'] = data => {
+      if(this.projector)
+        this.projector.children = _.chunk(new Float32Array(data), 6);
+    };
+
     return listeners;
   }
 
@@ -67,7 +91,8 @@ export default class Board extends State {
     this.settings = new Board.SettingsPopup;
 
     // Renderer, it should be under UI!
-    this.add(new Board.IsometricProjector, { align: [0., 0.], fill: [1., 1.] });
+    this.projector = this
+      .add(new Board.IsometricProjector, { align: [0., 0.], fill: [1., 1.] });
 
     // UI buttons
     this
@@ -76,52 +101,53 @@ export default class Board extends State {
   }
 };
 
+/** Bind keyCode to direction */
+Board.keyBindings = {
+    87: [0, -1]  /** W */
+  , 83: [0, 1] /** S */
+  , 68: [1, 0] /** D */
+  , 65: [-1, 0]  /** A */
+};
+
 /**
- * Render whole isometric map, it uses
+ * Render whole map
  * @class
  */
 Board.IsometricProjector = class extends Layer {
   init() {
-    this.players = [[0, 0]];
+    this.eventForwarding = false;
   }
 
+  /** @inherticdoc */
   draw(ctx) {
-    // Layer 1: Floor
-    let cursor = new Rect(0, 0, 32, 16)
-      , tiles = new Vec2(10, 24);
-
-    let startPos = new Vec2(0, this.rect.h / 2 + tiles.y * cursor.h / 4);
-    for(let i = 0;i < tiles.x;++i)
-      for(let j = 0;j < tiles.y;++j) {
-        cursor.xy = [
-            startPos.x + cursor.w / 2 * i + cursor.w / 2 * j
-          , startPos.y + cursor.h / 2 * i - cursor.h / 2 * j
-        ];
-        ctx.drawImage("floor", cursor);
-      }
-
-    // Layer 2: Players
-    _.each(this.players, player => {
+    // Layer 1: Players
+    _.each(this.children, player => {
       ctx.drawImage("player", new Rect(
-          startPos.x + player[0]
-        , startPos.y + player[1] - 16
-        , 32, 32
+          player[0]
+        , player[1]
+        , player[2]
+        , player[2]
       ));
     });
-    // todo: Layer 3: Gates
   }
 
   /** @inheritdoc */
-  onEvent(event) {
-    if(event.type !== Message.Type.KEY_DOWN)
-      return false;
+  update() {
+    // Merge multiple request to one by adding direction params
+    let dir = new Vec2;
+    _.each(Board.keyBindings, (direction, keyCode) => {
+      this.canvas.pressedKeys[keyCode] && dir.add(direction);
+    });
 
-    console.log(event.data);
-    switch(event.data) {
-      /** W */
-      case 119:
-        this.players[0][0] += 0.1;
-        break;
+    // Send to server
+    // todo: Verification on server
+    if(dir.x || dir.y) {
+      Client.emit("move", dir);
+
+      // For smooth movement
+      // todo: only for player
+      this.children[0][0] += dir.x;
+      this.children[0][1] += dir.y;
     }
   }
 };
@@ -218,7 +244,8 @@ Board.SettingsPopup = class extends Popup {
         Client.emit("roomKick", this.selectedPlayer);
       });
     hBox
-      .add(new Button(new Rect(0, 0, 64, 0), "Start"), { fill: [0., 1.] });
+      .add(new Button(new Rect(0, 0, 64, 0), "Start"), { fill: [0., 1.] })
+      .addForwarder(Message.Type.MOUSE_CLICK, _.partial(Client.emit, "roomStart", null));
     return this;
   }
 

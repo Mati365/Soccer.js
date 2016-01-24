@@ -2,18 +2,8 @@
 const md5 = require("blueimp-md5")
     , _ = require("lodash");
 
-const { Vec2, Circle } = require("../shared/math")
+const { Vec2, Circle, Rect } = require("../shared/math")
     , io = require("./server");
-
-/**
- * Room body
- */
-class Body extends Circle {
-  constructor(x, y, r) {
-    super(x, y, r);
-    this.v = new Vec2;
-  }
-}
 
 /**
  * Room class
@@ -29,7 +19,8 @@ class Room {
     this.admin = this.join(admin);
 
     // Ball is separated object
-    this.ball = new Body(16, 16, 16);
+    this.ball = new Circle(16, 16, 32);
+    this.board = new Rect(0, 0, 400, 400);
 
     // hide room in rooms list
     if(hidden !== true)
@@ -61,7 +52,7 @@ class Room {
    * @returns {boolean}
    */
   isFull() {
-    return this.maxPlayers <= this.connected().length;
+    return this.maxPlayers <= this.players.length;
   }
 
   /**
@@ -87,23 +78,23 @@ class Room {
   }
 
   /**
-   * Get list of all players from all teams
+   * Get list of all players from all teams without omit
    * @param omit  Omit team name
    * @returns Players
    */
-  connected(omit) {
-    return _.chain(this.teams)
-      .omit(omit)
-      .values()
-      .flatten()
-      .value();
+  omitTeam(omit) {
+    return _.filter(this.players, player => player.team !== omit);
   }
 
   /**
    * Destroy room
    */
   destroy() {
-    _.each(this.connected(), this.kick.bind(this));
+    // Stop interval
+    this.stop();
+
+    // Kick all players ;)
+    _.each(this.players, this.kick.bind(this));
     _.remove(Room.list, this);
     return this;
   }
@@ -113,14 +104,43 @@ class Room {
    * @private
    */
   _updatePhysics() {
-    this.cachedPlayers = this.connected("spectators");
-    console.log(this.cachedPlayers);
+    let cachedPlayers = this.omitTeam("spectators");
+
+    // Socket data [x, y, r, flag, v.x, v.y]
+    let packSize = 6
+      , socketData = new Float32Array(cachedPlayers.length * packSize);
+
+    _.each(cachedPlayers, (player, index) => {
+      // Update physics
+      player.body.circle.add(player.body.v);
+      player.body.v.xy = [
+          player.body.v.x.toFixed(2) * .95
+        , player.body.v.y.toFixed(2) * .95
+      ];
+
+      // Set data
+      socketData.set([
+        /** position */
+          player.body.circle.x
+        , player.body.circle.y
+        , player.body.circle.r
+        , 0 /** todo: Flags */
+
+        /** velocity */
+        , player.body.v.x
+        , player.body.v.y
+      ], index * packSize)
+    });
+
+    // Broadcast
+    this.broadcast("roomUpdate", socketData.buffer);
   }
 
   /**
    * Start/stop room loop
    */
   start() {
+    this.physicsInterval && this.stop();
     this.physicsInterval = setInterval(this._updatePhysics.bind(this), 1000 / 30);
   }
   stop() {
@@ -137,7 +157,7 @@ class Room {
     player.team = newTeam || "spectators";
 
     // Reload teams
-    newTeam && this._broadcastPlayers();
+    newTeam && this._broadcastSettings();
     return this;
   }
 
@@ -153,13 +173,17 @@ class Room {
   }
 
   /**
-   * Send list players teams
+   * Send room settings to all player socket
    * @param socket  Socket
    * @returns {Room}
    * @private
    */
-  _broadcastPlayers(socket) {
-    (socket ? socket.emit.bind(socket) : this.broadcast.bind(this))("roomPlayerList", this.teamsHeaders);
+  _broadcastSettings(socket) {
+    let data = {
+        teams: this.teamsHeaders
+      , board: this.board
+    };
+    (socket ? socket.emit.bind(socket) : this.broadcast.bind(this))("roomSettings", data);
     return this;
   }
 
@@ -171,6 +195,9 @@ class Room {
   join(player) {
     // Adding to list
     player.room = this;
+    player.initBody();
+
+    // Join socket
     player.socket.join(this.name);
 
     this.players.push(player);
@@ -183,7 +210,7 @@ class Room {
     });
 
     // Send list of players to player
-    this._broadcastPlayers(player.socket);
+    this._broadcastSettings(player.socket);
     return player;
   }
 
@@ -200,7 +227,7 @@ class Room {
     this.broadcast("roomPlayerLeave", _.pick(player, "team", "nick"));
 
     // Reset variables for future room
-    player.room = player.team = null;
+    player.room = player.team = player.body = null;
 
     _.remove(this.players, player);
     this.admin === player && this.destroy();
@@ -224,6 +251,5 @@ class Room {
 
 /** Export modules */
 module.exports = {
-    Body: Body
-  , Room: Room
+  Room: Room
 };
