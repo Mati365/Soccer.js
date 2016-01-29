@@ -33,8 +33,13 @@ class Vec2 {
    */
   add(vec, mul) {
     mul = mul || 1.0;
-    this.x += vec.x * mul;
-    this.y += vec.y * mul;
+    if(_.isArray(vec)) {
+      this.x += vec[0] * mul;
+      this.y += vec[1] * mul;
+    } else {
+      this.x += vec.x * mul;
+      this.y += vec.y * mul;
+    }
     return this;
   }
 

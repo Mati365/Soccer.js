@@ -105,6 +105,8 @@ class Room {
    */
   _updatePhysics() {
     let cachedPlayers = this.omitTeam("spectators");
+    if(!cachedPlayers.length)
+      return;
 
     // Socket data [x, y, r, flag, v.x, v.y]
     let packSize = 6
@@ -114,8 +116,8 @@ class Room {
       // Update physics
       player.body.circle.add(player.body.v);
       player.body.v.xy = [
-          player.body.v.x.toFixed(2) * .95
-        , player.body.v.y.toFixed(2) * .95
+          player.body.v.x * .95
+        , player.body.v.y * .95
       ];
 
       // Set data
@@ -141,7 +143,7 @@ class Room {
    */
   start() {
     this.physicsInterval && this.stop();
-    this.physicsInterval = setInterval(this._updatePhysics.bind(this), 1000 / 30);
+    this.physicsInterval = setInterval(this._updatePhysics.bind(this), 1000 / 60);
   }
   stop() {
     clearInterval(this.physicsInterval);

@@ -1,9 +1,25 @@
 import _ from "lodash";
 import io from "socket.io-client";
 
+/** Connect socket to server */
 var socket = io.connect("ws://localhost:3000");
+
+/** Send ping and pong to server */
+var latency = 0;
+setInterval(() => {
+  let t = Date.now();
+  socket.emit("latency", null, () => {
+    latency = Date.now() - t;
+  });
+}, 100);
+
 export default {
     socket: socket
+
+  /**
+   * Get client ping
+   */
+  , get ping() { return latency;  }
 
   /**
    * Emit data via socket

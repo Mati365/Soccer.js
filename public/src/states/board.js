@@ -15,7 +15,7 @@ import Client from "../multiplayer/client";
 
 ///** Only for debug */
 let d = {
-  name: "debug room"
+    name: "debug room"
   , pass: ""
   , hidden: false
   , players: 8
@@ -139,16 +139,18 @@ Board.IsometricProjector = class extends Layer {
       this.canvas.pressedKeys[keyCode] && dir.add(direction);
     });
 
-    // Send to server
-    // todo: Verification on server
-    if(dir.x || dir.y) {
+    // Send to server input
+    if(dir.x || dir.y)
       Client.emit("move", dir);
 
-      // For smooth movement
-      // todo: only for player
-      this.children[0][0] += dir.x;
-      this.children[0][1] += dir.y;
-    }
+    //// Update logic
+    //_.each(this.children, child => {
+    //  // todo: FPS in config
+    //  let brake = ((1000 / 30) - Client.ping) / (1000 / 30);
+    //
+    //  child[0] += child[4];
+    //  child[1] += child[5];
+    //});
   }
 };
 

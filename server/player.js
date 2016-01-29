@@ -110,6 +110,9 @@ class Player {
           this.body.v.add(dir);
       })
 
+      /** Ping pong for latency */
+      .on("latency", (data, fn) => { fn(); })
+
       /** Disconnect from server */
       .on("disconnect", _.partial(Player.remove, this));
   }
