@@ -16,13 +16,17 @@ open source HaxBall clone written in ES6
 - [ ] Multiple locale support
 
 ## Installing
-In cloned folder:
+**Build client:**
 ```
 sudo npm install
 ```
 and
 ```
-gulp es6
+./node_modules/.bin/gulp es6
+```
+**Run server:**
+```
+npm run-script start
 ```
 
 ## License
