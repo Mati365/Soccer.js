@@ -5,6 +5,16 @@ open source HaxBall clone written in ES6
 ## Screenshots
 ![Room creator](/screenshots/room_creator.png?raw=true "Room creator")
 
+## Todo
+
+- [x] Graphics engine
+- [x] Room listing
+- [x] Room creation
+- [x] Room players management
+- [ ] Soccer match logic 
+- [ ] Better UI
+- [ ] Multiple locale support
+
 ## Installing
 In cloned folder:
 ```
