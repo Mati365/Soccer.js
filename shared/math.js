@@ -177,13 +177,21 @@ class Circle extends Vec2 {
   }
 
   /**
+   * Get center position of circle
+   * @returns {Vec2}
+   */
+  get center() {
+    return new Vec2(this.x + this.r / 2, this.y + this.r / 2);
+  }
+
+  /**
    * Get distance between circles
    * @param circle  Circle
    * @returns {number}
    */
   distance(circle) {
-    let x = this.x - circle.x
-      , y = this.y - circle.y;
+    let x = this.x + this.r / 2 - circle.x - circle.r / 2
+      , y = this.y + this.r / 2 - circle.y - circle.r / 2;
     return Math.sqrt(x*x + y*y);
   }
 

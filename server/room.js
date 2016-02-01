@@ -6,7 +6,19 @@ const { Vec2, Circle, Rect } = require("../shared/math")
     , io = require("./server");
 
 /**
+ * Body showed on board
+ * @class
+ */
+class BoardBody {
+  constructor(circle, v) {
+    this.circle = circle;
+    this.v = v || new Vec2;
+  }
+}
+
+/**
  * Room class
+ * @class
  */
 class Room {
   constructor(name, admin, maxPlayers, password, hidden) {
@@ -19,7 +31,9 @@ class Room {
     this.admin = this.join(admin);
 
     // Ball is separated object
-    this.ball = new Circle(16, 16, 32);
+    this.ball = {
+      body: new BoardBody(new Circle(32, 32, 13))
+    };
     this.board = new Rect(0, 0, 400, 400);
 
     // hide room in rooms list
@@ -100,19 +114,52 @@ class Room {
   }
 
   /**
+   * Check room collisions
+   * @param players Players array
+   * @param index   Player index
+   * @private
+   */
+  static checkCollisions(players, index) {
+    let p1 = players[index].body
+      , c1 = p1.circle.center;
+
+    for (let i = 0; i < players.length; ++i) {
+      if(i === index)
+        continue;
+
+      // Get center of circle
+      let p2 = players[i].body
+        , c2 = p2.circle.center;
+
+      // If the circles are colliding
+      if(p1.circle.intersect(p2.circle)) {
+        let dist = p2.circle.distance(p1.circle);
+        p2.v.x += (c2.x - c1.x) / dist;
+        p2.v.y += (c2.y - c1.y) / dist;
+        p2.circle.add(p2.v);
+      }
+    }
+  }
+
+  /**
    * Update physics in loop
    * @private
    */
   _updatePhysics() {
-    let cachedPlayers = this.omitTeam("spectators");
-    if(!cachedPlayers.length)
-      return;
+    let cachedPlayers = this.omitTeam(Room.Teams.SPECTATORS);
+    cachedPlayers.push(...[
+      this.ball
+    ]);
 
     // Socket data [x, y, r, flag, v.x, v.y]
     let packSize = 6
       , socketData = new Float32Array(cachedPlayers.length * packSize);
 
     _.each(cachedPlayers, (player, index) => {
+      // Check collisions
+      if(index !== cachedPlayers.length - 1)
+        Room.checkCollisions(cachedPlayers, index);
+
       // Update physics
       player.body.circle.add(player.body.v);
       player.body.v.xy = [
@@ -120,13 +167,14 @@ class Room {
         , player.body.v.y * .95
       ];
 
-      // Set data
+      // Data structure: 00000BRR
+      let flags = player.team | (index === cachedPlayers.length - 1 && 1 << 2);
       socketData.set([
         /** position */
           player.body.circle.x
         , player.body.circle.y
         , player.body.circle.r
-        , 0 /** todo: Flags */
+        , flags /** todo: More flags */
 
         /** velocity */
         , player.body.v.x
@@ -156,10 +204,8 @@ class Room {
    * @returns {Room}
    */
   setTeam(player, newTeam) {
-    player.team = newTeam || "spectators";
-
-    // Reload teams
-    newTeam && this._broadcastSettings();
+    player.team = newTeam;
+    this._broadcastSettings();
     return this;
   }
 
@@ -196,20 +242,20 @@ class Room {
    */
   join(player) {
     // Adding to list
-    player.room = this;
-    player.initBody();
+    _.assign(player, {
+        team: Room.Teams.SPECTATORS
+      , room: this
+      , body: new BoardBody(new Circle(0, 0, 13))
+    });
 
     // Join socket
     player.socket.join(this.name);
-
     this.players.push(player);
-    this.setTeam(player);
 
     // Broadcast to except player
-    player.socket.broadcast.to(this.name).emit("roomPlayerJoin", {
-        team: "spectators"
-      , nick: player.nick
-    });
+    player.socket.broadcast
+      .to(this.name)
+      .emit("roomPlayerJoin", _.pick(player, ["nick", "team"]));
 
     // Send list of players to player
     this._broadcastSettings(player.socket);
@@ -245,11 +291,18 @@ class Room {
       return {
           name: room.name
         , password: room.isLocked() ? "yes" : "no"
-        , players: _.flatten(this.player).length + "/" + room.maxPlayers
+        , players: room.players.length + "/" + room.maxPlayers
       };
     });
   }
 }
+
+/** Team codes */
+Room.Teams = {
+    LEFT: 0
+  , SPECTATORS: 1
+  , RIGHT: 2
+};
 
 /** Export modules */
 module.exports = {

@@ -13,18 +13,18 @@ import Table from "../ui/table";
 import Message from "../engine/message";
 import Client from "../multiplayer/client";
 
-///** Only for debug */
-let d = {
-    name: "debug room"
-  , pass: ""
-  , hidden: false
-  , players: 8
-};
-Client
-  .emit("setNick", "debug player")
-  .then(Client.emit("createRoom", d))
-  .then(Client.emit("setTeam", { nick: "debug player", team: "left" }))
-  .then(Client.emit("roomStart"));
+/////** Only for debug */
+//let d = {
+//    name: "debug room"
+//  , pass: ""
+//  , hidden: false
+//  , players: 8
+//};
+//Client
+//  .emit("setNick", "debug player")
+//  .then(Client.emit("createRoom", d))
+//  .then(Client.emit("setTeam", { nick: "debug player", team: 2 }))
+//  .then(Client.emit("roomStart"));
 
 /**
  * Core game state, it shows rooms gameplay
@@ -40,8 +40,7 @@ export default class Board extends State {
    */
   get assets() {
     return {
-        'floor': "assets/floor.png"
-      , 'player': "assets/player.png"
+      'tile': "assets/tile.png"
     };
   }
 
@@ -116,18 +115,24 @@ Board.keyBindings = {
 Board.IsometricProjector = class extends Layer {
   init() {
     this.eventForwarding = false;
+    this.tile = new Sprite(new Rect(0, 0, 16, 16), "tile", new Vec2(4, 1));
   }
 
   /** @inherticdoc */
   draw(ctx) {
-    // Layer 1: Players
     _.each(this.children, player => {
-      ctx.drawImage("player", new Rect(
-          player[0]
-        , player[1]
-        , player[2]
-        , player[2]
-      ));
+      // Position
+      this.tile.rect.xy = player;
+
+      // Box width is 2*radius of circle
+      this.tile.rect.w = this.tile.rect.h = player[2] * 2;
+
+      // Render sprite
+      this.tile.tileIndex.xy = [
+          (player[3] & 0b100) ? 1 : (player[3] & 0b011)
+        , 0
+      ];
+      this.tile.draw(ctx);
     });
   }
 
@@ -188,18 +193,15 @@ Board.SettingsPopup = class extends Popup {
    * @private
    */
   _changeTeam(next) {
-    // It helps with getting previous and next element
-    // 0: ["key", Table], ...
-    let pairs = _.toPairs(this.teams);
-    _.each(pairs, ([team, players], index)  => {
-      let selected = players.listbox.selected
-        , newTeam = pairs[index + next];
+    _.each(this.teams, (table, index)  => {
+      let selected = table.listbox.selected
+        , newTeam = index + next;
 
       // Move selected to other team
-      if(selected && newTeam) {
+      if(selected && this.teams[newTeam]) {
         Client.emit("setTeam", {
             nick: selected
-          , team: newTeam[0]
+          , team: newTeam
         });
         return false;
       }
@@ -214,12 +216,12 @@ Board.SettingsPopup = class extends Popup {
     let teamsBox = this.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 200)), { fill: [1., .0] });
 
     // Left
-    this.teams = {};
-    this.teams.left = teamsBox.add(new Table([["Left", 1.0]]), { fill: [.33, 1.] });
+    this.teams = [];
+    this.teams[0] = teamsBox.add(new Table([["Left", 1.0]]), { fill: [.33, 1.] });
 
     // Toolbox
     let toolbox = teamsBox.add(new Layer(Layer.VBox), { fill: [.34, 1.] });
-    this.teams.spectators = toolbox.add(new Table([["Spectators", 1.]]), { fill: [1., .7] });
+    this.teams[1] = toolbox.add(new Table([["Spectators", 1.]]), { fill: [1., .7] });
 
     toolbox
       .add(new Button(new Rect, "<"), { fill: [1., .1] })
@@ -230,7 +232,7 @@ Board.SettingsPopup = class extends Popup {
       .addForwarder(Message.Type.MOUSE_CLICK, this._changeTeam.bind(this, 1));
 
     // Right
-    this.teams.right = teamsBox.add(new Table([["Right", 1.]]), { fill: [.33, 1.] });
+    this.teams[2] = teamsBox.add(new Table([["Right", 1.]]), { fill: [.33, 1.] });
     return this;
   }
 

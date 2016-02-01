@@ -19,7 +19,7 @@ export default class ListBox extends Layer {
     super(Layer.VBox, rect);
 
     this.multiselect = false;
-    this.lineHeight = 14;
+    this.lineHeight = 16;
 
     this.padding.xy = [0, 1];
   }
