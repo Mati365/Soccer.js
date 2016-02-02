@@ -24,7 +24,7 @@ export default class Context {
     if(!selector) {
       this.domElement = $("<canvas />").prop({
           width: 640
-        , height: 320
+        , height: 480
         , tabindex: 1
       })[0];
       $("body").append(this.domElement);
@@ -35,7 +35,10 @@ export default class Context {
       if(!this.domElement)
         throw "Cannot find canvas!";
     }
-    Context._loadFont("assets/font.ttf");
+
+    // Load font
+    Context._loadFont("assets/font.ttf", "Canvas Font");
+    Context._loadFont("assets/score.ttf", "Score Font");
 
     // Context
     this.ctx = this.domElement.getContext("2d");
@@ -61,11 +64,11 @@ export default class Context {
   }
 
   /** Load fonts by adding them to head */
-  static _loadFont(url) {
+  static _loadFont(url, title) {
     $(document.head).prepend(
       `<style type='text/css'>
         @font-face {
-          font-family: 'Canvas Font';
+          font-family: '${title}';
           src: url('${url}') format('truetype');
         }
       </style>`
@@ -102,11 +105,12 @@ export default class Context {
 
   /**
    * Set font size
-   * @param size  Font size
+   * @param size      Font size
+   * @param fontName  Font name
    * @returns {Context}
    */
-  setFontSize(size=14) {
-    this.ctx.font = `${size}px 'Canvas Font'`;
+  setFontSize(size=14, fontName="Canvas Font") {
+    this.ctx.font = `${size}px '${fontName}'`;
     return this;
   }
 
@@ -167,13 +171,14 @@ export default class Context {
 
   /**
    * Draw stroked rect
-   * @param rect  Rectangle
+   * @param rect    Rectangle
+   * @param stroke  Line width
    * @returns {Context}
    */
-  strokeRect(rect) {
+  strokeRect(rect, stroke) {
     this.ctx.save();
     this.ctx.translate(.5, .5);
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = stroke || 1;
     this.ctx.strokeRect(
         rect.x
       , rect.y
@@ -181,6 +186,30 @@ export default class Context {
       , rect.h
     );
     this.ctx.restore();
+    return this;
+  }
+
+  /**
+   * Stroke circle
+   * @param pos     Position
+   * @param r       Radius
+   * @param stroke  Stroke
+   * @returns {Context}
+   */
+  strokeCircle(pos, r, stroke) {
+    this.ctx.beginPath();
+    this.ctx.lineWidth = stroke;
+    this.ctx.arc(pos.x, pos.y, r, 0, 2. * Math.PI);
+    this.ctx.stroke();
+    return this;
+  }
+
+  /**
+   * Fill
+   * @returns {Context}
+   */
+  fill() {
+    this.ctx.fill();
     return this;
   }
 

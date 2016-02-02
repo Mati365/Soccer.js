@@ -26,15 +26,16 @@ class Room {
     this.maxPlayers = maxPlayers || 2;
     this.password =  md5(password);
 
+    // Ball is separated object
+    this.board = new Rect(0, 0, 500, 250);
+    this.goals = {
+        0: {sign: -1, p1: [0, 40], p2: [0, 190], score: 0}
+      , 2: {sign: 1, p1: [500, 40], p2: [500, 190], score: 0}
+    };
+
     // Players
     this.players = [];
     this.admin = this.join(admin);
-
-    // Ball is separated object
-    this.ball = {
-      body: new BoardBody(new Circle(32, 32, 13))
-    };
-    this.board = new Rect(0, 0, 400, 400);
 
     // hide room in rooms list
     if(hidden !== true)
@@ -83,10 +84,10 @@ class Room {
    * @returns {Room}
    */
   kick(player) {
-    player
-      .socket
-      .emit("roomKick", "You are kicked!")
-      .leave(this.name);
+    if(!player)
+      return;
+
+    player.socket.emit("roomKick", "You are kicked!");
     this.leave(player);
     return this;
   }
@@ -133,9 +134,19 @@ class Room {
 
       // If the circles are colliding
       if(p1.circle.intersect(p2.circle)) {
-        let dist = p2.circle.distance(p1.circle);
-        p2.v.x += (c2.x - c1.x) / dist;
-        p2.v.y += (c2.y - c1.y) / dist;
+        let dist = p2.circle.distance(p1.circle)
+          , vx = (c2.x - c1.x) / dist
+          , vy = (c2.y - c1.y) / dist;
+
+        // Kick if it's the ball
+        if(i === players.length - 1 && players[index].flags & 2) {
+          vx *= 8;
+          vy *= 8;
+        }
+
+        // Add to velocity vector
+        p2.v.x += vx;
+        p2.v.y += vy;
         p2.circle.add(p2.v);
       }
     }
@@ -156,8 +167,10 @@ class Room {
       , socketData = new Float32Array(cachedPlayers.length * packSize);
 
     _.each(cachedPlayers, (player, index) => {
-      // Check collisions
-      if(index !== cachedPlayers.length - 1)
+      let isBall = index === cachedPlayers.length - 1;
+
+      // Check collisions without ball
+      if(!isBall)
         Room.checkCollisions(cachedPlayers, index);
 
       // Update physics
@@ -167,8 +180,16 @@ class Room {
         , player.body.v.y * .95
       ];
 
-      // Data structure: 00000BRR
-      let flags = player.team | (index === cachedPlayers.length - 1 && 1 << 2);
+      // Check collisions with borders
+      if(isBall)
+        !this.board.contains(player.body.circle) && player.body.v.mul(-1);
+
+      // Data structure: 0FFFFBRR
+      let flags =
+          player.team
+        | (index === cachedPlayers.length - 1 && 1 << 2)
+        | player.flags << 3;
+
       socketData.set([
         /** position */
           player.body.circle.x
@@ -190,6 +211,12 @@ class Room {
    * Start/stop room loop
    */
   start() {
+    // Set ball
+    this.ball = {
+      body: new BoardBody(new Circle(this.board.w / 2 - 5, this.board.h / 2 - 5, 10))
+    };
+
+    // Start interval
     this.physicsInterval && this.stop();
     this.physicsInterval = setInterval(this._updatePhysics.bind(this), 1000 / 60);
   }
@@ -199,13 +226,34 @@ class Room {
 
   /**
    * Set player team
-   * @param player    player
+   * @param player    Player
    * @param newTeam   New team
    * @returns {Room}
    */
   setTeam(player, newTeam) {
-    player.team = newTeam;
-    this._broadcastSettings();
+    // Create new body
+    _.assign(player, {
+        team: newTeam
+      , body: new BoardBody(new Circle(60, 60, 13))
+    });
+
+    this
+      ._alignOnBoard(player)
+      ._broadcastSettings();
+    return this;
+  }
+
+  /**
+   * Set player position on board
+   * @param player  Player
+   * @returns {Room}
+   */
+  _alignOnBoard(player) {
+    if(this.board.w > this.board.h) {
+
+    } else {
+
+    }
     return this;
   }
 
@@ -229,7 +277,8 @@ class Room {
   _broadcastSettings(socket) {
     let data = {
         teams: this.teamsHeaders
-      , board: this.board
+      , board: this.board.xywh
+      , goals: this.goals
     };
     (socket ? socket.emit.bind(socket) : this.broadcast.bind(this))("roomSettings", data);
     return this;
@@ -245,7 +294,6 @@ class Room {
     _.assign(player, {
         team: Room.Teams.SPECTATORS
       , room: this
-      , body: new BoardBody(new Circle(0, 0, 13))
     });
 
     // Join socket
@@ -268,10 +316,11 @@ class Room {
    * @returns {Room}
    */
   leave(player) {
-    if(!player.team)
+    if(!player)
       return;
 
     // Leave
+    player.socket.leave(this.name);
     this.broadcast("roomPlayerLeave", _.pick(player, "team", "nick"));
 
     // Reset variables for future room

@@ -87,6 +87,7 @@ export default class Canvas {
       .on("keyup", e => {
         // Mark as unset
         this.pressedKeys[e.which] = false;
+        this.broadcast(new Message(Message.Type.KEY_UP, this, e.which));
       })
 
        /** MOUSE SCROLL */

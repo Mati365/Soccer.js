@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import { Layer, State } from "../engine/object";
 import { Rect, Vec2 } from "shared/math";
+import Color from "shared/color";
 
 import { Sprite } from "../engine/wrapper";
 import Popup from "../ui/popup";
@@ -12,19 +13,6 @@ import Table from "../ui/table";
 
 import Message from "../engine/message";
 import Client from "../multiplayer/client";
-
-/////** Only for debug */
-//let d = {
-//    name: "debug room"
-//  , pass: ""
-//  , hidden: false
-//  , players: 8
-//};
-//Client
-//  .emit("setNick", "debug player")
-//  .then(Client.emit("createRoom", d))
-//  .then(Client.emit("setTeam", { nick: "debug player", team: 2 }))
-//  .then(Client.emit("roomStart"));
 
 /**
  * Core game state, it shows rooms gameplay
@@ -40,7 +28,7 @@ export default class Board extends State {
    */
   get assets() {
     return {
-      'tile': "assets/tile.png"
+      tile: "assets/tile.png"
     };
   }
 
@@ -55,7 +43,8 @@ export default class Board extends State {
       _.each(this.settings.teams, (listBox, key) => listBox.setRows(data.teams[key] || []));
 
       // Get board list
-      this.board = data.board;
+      this.projector.board.xywh = data.board;
+      this.projector.goals = data.goals;
     };
 
     // Fetch joining player
@@ -91,9 +80,12 @@ export default class Board extends State {
 
     // Renderer, it should be under UI!
     this.projector = this
-      .add(new Board.IsometricProjector, { align: [0., 0.], fill: [1., 1.] });
+      .add(new Board.Projector, { align: [0., 0.], fill: [1., 1.] });
 
     // UI buttons
+    this
+      .add(new Button(new Rect(0, 0, 100, 16), "Exit"), { align: [0., 1.] });
+
     this
       .add(new Button(new Rect(0, 0, 100, 16), "Options"), { align: [1., 1.] })
       .addForwarder(Message.Type.MOUSE_CLICK, this.showPopup.bind(this, this.settings));
@@ -112,28 +104,117 @@ Board.keyBindings = {
  * Render whole map
  * @class
  */
-Board.IsometricProjector = class extends Layer {
+Board.Projector = class extends Layer {
   init() {
     this.eventForwarding = false;
+
     this.tile = new Sprite(new Rect(0, 0, 16, 16), "tile", new Vec2(4, 1));
+    this.board = new Rect;
   }
 
   /** @inherticdoc */
-  draw(ctx) {
-    _.each(this.children, player => {
+  draw(context) {
+    let ctx = context.ctx;
+    ctx.save();
+    ctx.translate(this.rect.w / 2 - this.board.w / 2, 50);
+
+    // Render board
+    context
+      .strokeWith(Color.Hex.DARK_GRAY)
+
+      .strokeRect(this.board, 2)
+      .strokeLine(new Vec2(this.board.w / 2, this.board.h), new Vec2(this.board.w / 2, 0), 2);
+
+    // Render goals
+    context.strokeWith(Color.Hex.WHITE);
+    _.each(this.goals, goal => {
+      let r = 20
+        , w = 30  * goal.sign;
+
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+
+      // Top rounded border
+      ctx.moveTo(goal.p1[0], goal.p1[1]);
+      ctx.quadraticCurveTo(goal.p1[0] + w, goal.p1[1], goal.p1[0] + w, goal.p1[1] + r);
+
+      // Line between
+      ctx.moveTo(goal.p1[0] + w , goal.p1[1] + r);
+      ctx.lineTo(goal.p2[0] + w , goal.p2[1] - r);
+
+      // Bottom rounded border
+      ctx.moveTo(goal.p2[0], goal.p2[1]);
+      ctx.quadraticCurveTo(goal.p2[0] + w, goal.p2[1], goal.p2[0] + w, goal.p2[1] - r);
+
+      ctx.stroke();
+
+      // Draw circles
+      context
+        .strokeCircle(new Vec2(goal.p1[0], goal.p1[1]), 8).fill()
+        .strokeCircle(new Vec2(goal.p2[0], goal.p2[1]), 8).fill();
+    });
+
+    // Render players
+    _.each(this.children, (player, index) => {
+      let isBall = player[3] & 0b100;
+
       // Position
       this.tile.rect.xy = player;
-
-      // Box width is 2*radius of circle
       this.tile.rect.w = this.tile.rect.h = player[2] * 2;
 
       // Render sprite
-      this.tile.tileIndex.xy = [
-          (player[3] & 0b100) ? 1 : (player[3] & 0b011)
-        , 0
-      ];
-      this.tile.draw(ctx);
+      this.tile.tileIndex.xy = [isBall ? 1 : (player[3] & 0b011), 0];
+      this.tile.draw(context);
+
+      // Draw index
+      if(!isBall)
+        context
+          .fillWith(Color.Hex.WHITE)
+          .drawText(index, new Vec2(this.tile.rect.x + player[2] - 5, this.tile.rect.y + this.tile.rect.h - 7));
+
+      // Check flags
+      let flags = player[3] >> 3 & 0b111;
+      if(flags & 2)
+        context
+          .strokeWith("rgba(255, 255, 255, .35)")
+          .strokeCircle(new Vec2(this.tile.rect.x + player[2], this.tile.rect.y + player[2]), player[2] + 6, 2);
     });
+
+    // Render score
+    if(this.goals) {
+      let text = `${this.goals[0].score} : ${this.goals[2].score}`;
+      context
+        .fillWith(Color.Hex.WHITE)
+        .setFontSize(60, "Score Font")
+        .drawText(text, new Vec2(this.board.w / 2 - context.textWidth(text) / 2, -5));
+
+      // Draw colors
+      context
+        .fillWith("#e20000")
+        .fillRect(new Rect(0, -32, 38, 28))
+
+        .fillWith("#4b71ff")
+        .fillRect(new Rect(this.board.w - 38, -32, 38, 28));
+    }
+    ctx.restore();
+  }
+
+  /** @inheritdoc */
+  onEvent(event) {
+    if(!event.isKeyboardEvent())
+      return;
+
+    let flag = 0;
+    switch(event.data) {
+      /** Space */
+      case 32: flag = 1 << 1; break;
+    }
+
+    // Add flag when key pressed, remove when released
+    switch(event.type) {
+      case Message.Type.KEY_DOWN: Client.emit("addFlag", flag);     break;
+      case Message.Type.KEY_UP:   Client.emit("removeFlag", flag);  break;
+    }
   }
 
   /** @inheritdoc */
@@ -146,16 +227,7 @@ Board.IsometricProjector = class extends Layer {
 
     // Send to server input
     if(dir.x || dir.y)
-      Client.emit("move", dir);
-
-    //// Update logic
-    //_.each(this.children, child => {
-    //  // todo: FPS in config
-    //  let brake = ((1000 / 30) - Client.ping) / (1000 / 30);
-    //
-    //  child[0] += child[4];
-    //  child[1] += child[5];
-    //});
+      Client.emit("move", dir.xy);
   }
 };
 

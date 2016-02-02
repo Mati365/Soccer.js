@@ -118,6 +118,14 @@ class Rect extends Vec2 {
     return [this.w, this.h];
   }
 
+  get xywh() {
+    return [...this.xy, ...this.wh];
+  }
+  set xywh(xywh) {
+    this.xy = xywh;
+    this.wh = xywh.slice(-2);
+  }
+
   /**
    * Remove border
    * @param border  Border size
@@ -161,9 +169,9 @@ class Rect extends Vec2 {
    */
   contains(rect) {
     return rect.x > this.x
-      && rect.x + (rect.w || 0) < this.x + this.w
+      && rect.x + (rect.w || rect.r * 2 || 0) < this.x + this.w
       && rect.y > this.y
-      && rect.y + (rect.h || 0) < this.y + this.h;
+      && rect.y + (rect.h || rect.r * 2 || 0) < this.y + this.h;
   }
 }
 

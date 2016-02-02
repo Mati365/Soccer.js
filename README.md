@@ -3,7 +3,8 @@ Soccer.js
 open source HaxBall clone written in ES6
 
 ## Screenshots
-![Room creator](/screenshots/room_creator.png?raw=true "Room creator")
+![Room](/screenshots/1.png?raw=true "Room")
+![Settings](/screenshots/2.png?raw=true "Room settings")
 
 ## Todo
 

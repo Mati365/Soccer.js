@@ -11,6 +11,7 @@ const { Room } = require("./room")
 class Player {
   constructor(socket) {
     this.socket = socket;
+    this.flags = 0;
     this.room = null;
 
     this._initListener();
@@ -23,6 +24,14 @@ class Player {
   _initListener() {
     let self = this;
     this.socket
+      /** Manage flag */
+      .on("addFlag", flag => {
+        this.flags |= flag;
+      })
+      .on("removeFlag", flag => {
+        this.flags &= ~flag;
+      })
+
       /** Authorize to server */
       .on("setNick", (nick, fn) => {
         fn(this.setNick(nick) ? `Welcome ${nick}!` : false);
@@ -88,8 +97,8 @@ class Player {
 
       /** Move body */
       .on("move", dir => {
-        if(this.body && this.body.v.length <= 3.)
-          this.body.v.add(dir);
+        if(this.body && this.body.v.length <= 2.25)
+          this.body.v.add(dir, .35);
       })
 
       /** Ping pong for latency */
@@ -142,6 +151,11 @@ class Player {
     return _.find(Player.list, { nick: nick });
   }
 }
+
+/** Player flags */
+Player.Flags = {
+  KICK: 1 << 1
+};
 
 /** List of all players */
 Player.list = [];
