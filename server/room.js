@@ -10,9 +10,10 @@ const { Vec2, Circle, Rect } = require("../shared/math")
  * @class
  */
 class BoardBody {
-  constructor(circle, v) {
+  constructor(room, circle, v) {
     this.circle = circle;
     this.v = v || new Vec2;
+    this.room = room;
   }
 }
 
@@ -27,10 +28,11 @@ class Room {
     this.password =  md5(password);
 
     // Ball is separated object
+    // todo: Vertical gates
     this.board = new Rect(0, 0, 500, 250);
     this.goals = {
-        0: {sign: -1, p1: [0, 40], p2: [0, 190], score: 0}
-      , 2: {sign: 1, p1: [500, 40], p2: [500, 190], score: 0}
+        0: {size: 30, sign: -1, p1: [0, 40], p2: [0, 190], score: 0}
+      , 2: {size: 30, sign: 1, p1: [500, 40], p2: [500, 190], score: 0}
     };
 
     // Players
@@ -147,9 +149,23 @@ class Room {
         // Add to velocity vector
         p2.v.x += vx;
         p2.v.y += vy;
-        p2.circle.add(p2.v);
+        //p2.circle.add(p2.v);
       }
     }
+  }
+
+  /**
+   * Broadcast goal and add score to team
+   * @param team  Team index
+   * @returns {Room}
+   * @private
+   */
+  _addGoal(team) {
+    this.goals[team].score++;
+    this
+      .broadcast("roomScore", _.mapValues(this.goals, "score"))
+      .start();
+    return this;
   }
 
   /**
@@ -167,22 +183,36 @@ class Room {
       , socketData = new Float32Array(cachedPlayers.length * packSize);
 
     _.each(cachedPlayers, (player, index) => {
-      let isBall = index === cachedPlayers.length - 1;
+      let circle = player.body.circle
+        , v = player.body.v
+        , isBall = index === cachedPlayers.length - 1;
 
       // Check collisions without ball
       if(!isBall)
         Room.checkCollisions(cachedPlayers, index);
 
-      // Update physics
-      player.body.circle.add(player.body.v);
-      player.body.v.xy = [
-          player.body.v.x * .95
-        , player.body.v.y * .95
-      ];
-
       // Check collisions with borders
-      if(isBall)
-        !this.board.contains(player.body.circle) && player.body.v.mul(-1);
+      if(isBall && !this.board.contains(circle)) {
+        // Create colliding box for each goal and check
+        let collidingGoal = _.findKey(this.goals, goal => {
+          let rect = new Rect(
+              goal.p1[0] - goal.size + (goal.sign === -1 && circle.r * 2)
+            , goal.p1[1] + goal.size
+            , goal.p2[0] - goal.p1[0] + goal.size
+            , goal.p2[1] - goal.p1[1] - goal.size * 2
+          );
+          return rect.intersect(circle);
+        });
+        if(collidingGoal) {
+          this._addGoal(collidingGoal);
+          return false;
+        } else
+          v.mul(-1);
+      }
+
+      // Update physics
+      circle.add(v);
+      v.xy = [v.x * .95, v.y * .95];
 
       // Data structure: 0FFFFBRR
       let flags =
@@ -192,14 +222,14 @@ class Room {
 
       socketData.set([
         /** position */
-          player.body.circle.x
-        , player.body.circle.y
-        , player.body.circle.r
+          circle.x
+        , circle.y
+        , circle.r
         , flags /** todo: More flags */
 
         /** velocity */
-        , player.body.v.x
-        , player.body.v.y
+        , v.x
+        , v.y
       ], index * packSize)
     });
 
@@ -213,7 +243,7 @@ class Room {
   start() {
     // Set ball
     this.ball = {
-      body: new BoardBody(new Circle(this.board.w / 2 - 5, this.board.h / 2 - 5, 10))
+      body: new BoardBody(this, new Circle(this.board.w / 2 - 5, this.board.h / 2 - 5, 10))
     };
 
     // Start interval
@@ -234,7 +264,7 @@ class Room {
     // Create new body
     _.assign(player, {
         team: newTeam
-      , body: new BoardBody(new Circle(60, 60, 13))
+      , body: new BoardBody(this, new Circle(60, 60, 13))
     });
 
     this

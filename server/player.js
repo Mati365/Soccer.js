@@ -25,12 +25,8 @@ class Player {
     let self = this;
     this.socket
       /** Manage flag */
-      .on("addFlag", flag => {
-        this.flags |= flag;
-      })
-      .on("removeFlag", flag => {
-        this.flags &= ~flag;
-      })
+      .on("addFlag", flag => this.flags |= flag)
+      .on("removeFlag", flag => this.flags &= ~flag)
 
       /** Authorize to server */
       .on("setNick", (nick, fn) => {

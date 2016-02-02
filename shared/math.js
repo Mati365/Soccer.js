@@ -155,9 +155,9 @@ class Rect extends Vec2 {
    * @return True if intersect
    */
   intersect(rect) {
-    return rect.x + rect.w >= this.x
+    return rect.x + (rect.w || rect.r * 2 || 0) >= this.x
       && rect.x <= this.x + this.w
-      && rect.y + rect.h >= this.y
+      && rect.y + (rect.h || rect.r * 2 || 0) >= this.y
       && rect.y <= this.y + this.h;
   }
 

@@ -47,6 +47,13 @@ export default class Board extends State {
       this.projector.goals = data.goals;
     };
 
+    // Room score
+    listeners['roomScore'] = data => {
+      _.each(data, (val, key) => {
+        this.projector.goals[key].score = val;
+      });
+    };
+
     // Fetch joining player
     listeners['roomPlayerJoin'] = data => {
       this.settings.teams[data.team].add(data.nick);
@@ -128,30 +135,34 @@ Board.Projector = class extends Layer {
     // Render goals
     context.strokeWith(Color.Hex.WHITE);
     _.each(this.goals, goal => {
-      let r = 20
-        , w = 30  * goal.sign;
+      let w = goal.size * goal.sign;
 
       ctx.beginPath();
       ctx.lineWidth = 2;
 
       // Top rounded border
       ctx.moveTo(goal.p1[0], goal.p1[1]);
-      ctx.quadraticCurveTo(goal.p1[0] + w, goal.p1[1], goal.p1[0] + w, goal.p1[1] + r);
+      ctx.quadraticCurveTo(goal.p1[0] + w, goal.p1[1], goal.p1[0] + w, goal.p1[1] + goal.size);
 
       // Line between
-      ctx.moveTo(goal.p1[0] + w , goal.p1[1] + r);
-      ctx.lineTo(goal.p2[0] + w , goal.p2[1] - r);
+      ctx.moveTo(goal.p1[0] + w , goal.p1[1] + goal.size);
+      ctx.lineTo(goal.p2[0] + w , goal.p2[1] - goal.size);
 
       // Bottom rounded border
       ctx.moveTo(goal.p2[0], goal.p2[1]);
-      ctx.quadraticCurveTo(goal.p2[0] + w, goal.p2[1], goal.p2[0] + w, goal.p2[1] - r);
+      ctx.quadraticCurveTo(goal.p2[0] + w, goal.p2[1], goal.p2[0] + w, goal.p2[1] - goal.size);
 
       ctx.stroke();
 
       // Draw circles
       context
-        .strokeCircle(new Vec2(goal.p1[0], goal.p1[1]), 8).fill()
-        .strokeCircle(new Vec2(goal.p2[0], goal.p2[1]), 8).fill();
+        .fillWith("#ffffff")
+
+        .strokeCircle(new Vec2(goal.p1[0], goal.p1[1]), 8)
+        .fill()
+
+        .strokeCircle(new Vec2(goal.p2[0], goal.p2[1]), 8)
+        .fill();
     });
 
     // Render players
@@ -176,27 +187,32 @@ Board.Projector = class extends Layer {
       let flags = player[3] >> 3 & 0b111;
       if(flags & 2)
         context
-          .strokeWith("rgba(255, 255, 255, .35)")
-          .strokeCircle(new Vec2(this.tile.rect.x + player[2], this.tile.rect.y + player[2]), player[2] + 6, 2);
+          .strokeWith(Color.Hex.WHITE)
+          .strokeCircle(new Vec2(this.tile.rect.x + player[2], this.tile.rect.y + player[2]), player[2], 4);
     });
+
+    ctx.restore();
 
     // Render score
     if(this.goals) {
       let text = `${this.goals[0].score} : ${this.goals[2].score}`;
       context
         .fillWith(Color.Hex.WHITE)
-        .setFontSize(60, "Score Font")
-        .drawText(text, new Vec2(this.board.w / 2 - context.textWidth(text) / 2, -5));
+        .setFontSize(60, "Score Font");
+
+      let textWidth = context.textWidth(text)
+        , scorePos = this.rect.w / 2 - textWidth / 2;
+
+      context.drawText(text, new Vec2(scorePos, 25));
 
       // Draw colors
       context
         .fillWith("#e20000")
-        .fillRect(new Rect(0, -32, 38, 28))
+        .fillRect(new Rect(scorePos - 50, 5, 38, 28))
 
         .fillWith("#4b71ff")
-        .fillRect(new Rect(this.board.w - 38, -32, 38, 28));
+        .fillRect(new Rect(scorePos + textWidth + 12, 5, 38, 28));
     }
-    ctx.restore();
   }
 
   /** @inheritdoc */

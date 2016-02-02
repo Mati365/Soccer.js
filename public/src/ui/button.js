@@ -30,24 +30,12 @@ export class Button extends Control {
     // Draw text
     let fontSize = this.rect.h * 0.9;
     context
-      .strokeWith(Color.Hex.WHITE)
-      .strokeRect(this.rect)
-
       .fillWith(fillColor.inverse())
       .setFontSize(fontSize)
       .drawText(this.text, new Vec2(
           this.rect.x + this.rect.w / 2 - context.textWidth(this.text) / 2
         , this.rect.y + this.rect.h / 2 + fontSize * .4
       ));
-
-    // Draw bottom shadow
-    context
-      .strokeWith(Color.Hex.GRAY)
-      .strokeLine(
-          new Vec2(this.rect.x + 1, this.rect.y + this.rect.h)
-        , new Vec2(this.rect.x + this.rect.w, this.rect.y + this.rect.h)
-        , 2
-      );
   }
 }
 
