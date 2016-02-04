@@ -1,5 +1,7 @@
 "use strict";
 const validate = require("validate.js")
+    , geoip = require("geoip-lite")
+    , request = require("request")
     , _ = require("lodash");
 
 const { Room } = require("./room")
@@ -14,6 +16,10 @@ class Player {
     this.flags = 0;
     this.room = null;
 
+    // Get global IP
+    request("https://diagnostic.opendns.com/myip", (err, data) => {
+      this.country = geoip.lookup(data.body).country.toLowerCase();
+    });
     this._initListener();
   }
 
@@ -30,7 +36,7 @@ class Player {
 
       /** Authorize to server */
       .on("setNick", (nick, fn) => {
-        fn(this.setNick(nick) ? `Welcome ${nick}!` : false);
+        fn(this.setNick(nick) ? `Welcome ${nick}!` : {error: "Incorrect nick"});
       })
 
       /** Create room on server */
@@ -38,11 +44,10 @@ class Player {
         let validation = validate(data, {
             name: {
               presence: true
-            , length: { minimum: 2, maximum: 32 }
+            , length: {minimum: 2, maximum: 32}
           }
-          , players: { numericality: { lessThanOrEqualTo: 20 } }
+          , players: {numericality: {lessThanOrEqualTo: 20}}
         });
-
         if(validation || this.room)
           fn({ error: "Invalid form data!" });
         else {
@@ -60,9 +65,9 @@ class Player {
       .on("askToConnect", function(data, fn) {
         let room = _.find(Room.list, data);
         if(!room || room.isFull())
-          fn({ error: "Cannot is full!" });
+          fn({error: "Room is full :("});
         else
-          fn({ isLocked: room.isLocked() });
+          fn({isLocked: room.isLocked()});
 
         /** Authorize to room */
         this.on("authorizeToRoom", (data, fn) => {
@@ -71,7 +76,7 @@ class Player {
             fn("Welcome in room :)");
             room.join(self);
           } else
-            fn({ error: "Incorrect password!" })
+            fn({error: "Incorrect password!"})
         });
       })
 
@@ -93,12 +98,12 @@ class Player {
 
       /** Move body */
       .on("move", dir => {
-        if(this.body && this.body.v.length <= 2.25)
+        if(this.body && this.body.v.length <= 1.8)
           this.body.v.add(dir, .35);
       })
 
       /** Ping pong for latency */
-      .on("latency", (data, fn) => { fn(); })
+      .on("latency", (data, fn) => fn())
 
       /** Disconnect from server */
       .on("disconnect", _.partial(Player.remove, this));
@@ -155,7 +160,11 @@ Player.Flags = {
 
 /** List of all players */
 Player.list = [];
-io.on("connection", Player.create);
+io.on("connection", socket => {
+  // Create player when is ready
+  Player.create(socket);
+  socket.emit("serverReady");
+});
 
 /** Export */
 module.exports = Player;

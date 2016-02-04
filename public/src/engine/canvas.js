@@ -33,9 +33,66 @@ export default class Canvas {
 
   /** Canvas context */
   get ctx() { return this.context.ctx; }
+  get currentState() {
+    return this.states[this.activeState];
+  }
 
-  /** Create event listeners */
-  _initListeners() {
+  /**
+   * Set current state
+   * @param name  State name
+   * @returns {Canvas}
+   */
+  setState(name) {
+    this.activeState = name;
+    return this.states[name];
+  }
+
+  /**
+   * Init keyboard listeners
+   * @returns {Canvas}
+   * @private
+   */
+  _initKeyboard() {
+    // Characters that are buggy on firefox/chrome
+    let illegalCharacters = [8, 13];
+
+    // Pressed keys
+    this.pressedKeys = {};
+
+    // Handle key down
+    let keyDownHandler = e => {
+      this.pressedKeys[e.which] = true;
+      this.broadcast(new Message(
+          Message.Type[~illegalCharacters.indexOf(e.which) ? 'KEY_ENTER' : 'KEY_DOWN']
+        , this, e.which
+      ));
+    };
+
+    // Handle key press
+    let keyPressHandler = e => {
+      !~illegalCharacters.indexOf(e.which) && this.broadcast(new Message(Message.Type.KEY_ENTER, this, e.which));
+      e.preventDefault();
+    };
+
+    // Handle key up
+    let keyUpHandler = e => {
+      this.pressedKeys[e.which] = false;
+      this.broadcast(new Message(Message.Type.KEY_UP, this, e.which));
+    };
+
+    $(this.context.domElement)
+      .on("keydown", keyDownHandler)
+      .on("keypress", keyPressHandler)
+      .on("keyup", keyUpHandler);
+    return this;
+  }
+
+  /**
+   * Init mouse listeners
+   * @returns {Canvas}
+   * @private
+   */
+  _initMouse() {
     let domInstance = $(this.context.domElement);
 
     // Translate event from DOM system to engine, "click" to Mouse.Type.MOUSE_CLICK
@@ -57,41 +114,18 @@ export default class Canvas {
       class ScrollAmount extends Vec2 {
         constructor(x, y) {
           super(x, y);
-          this.amount =  e.originalEvent.deltaY / Math.abs(e.originalEvent.deltaY);
+          this.amount =  Math.sign(e.detail || e.originalEvent.deltaY);
         }
         clone() { return new ScrollAmount(this.x, this.y); }
       }
       this.broadcast(new Message(Message.Type.MOUSE_SCROLL, this, new ScrollAmount(mousePos.x, mousePos.y)));
     };
 
-    // Pressed keys
-    this.pressedKeys = {};
-
     // Cached mouse position
     let mousePos = new Vec2;
     domInstance
-      /** KEYBOARD LISTENERS */
-      .on("keydown", e => {
-        let isCharacter = e.which >= 65 && e.which <= 90;
-        if(isCharacter || e.which >= 48 && e.which <= 90 || [8, 32].indexOf(e.which)+1) {
-          this.broadcast(
-            new Message(Message.Type.KEY_ENTER, this, e.which + (!e.shiftKey && isCharacter ? 32 : 0))
-          );
-          e.preventDefault();
-        }
-
-        // Mark as pressed
-        this.pressedKeys[e.which] = true;
-        this.broadcast(new Message(Message.Type.KEY_DOWN, this, e.which));
-      })
-      .on("keyup", e => {
-        // Mark as unset
-        this.pressedKeys[e.which] = false;
-        this.broadcast(new Message(Message.Type.KEY_UP, this, e.which));
-      })
-
-       /** MOUSE SCROLL */
-      .on("mousewheel", mouseScroll)
+    /** MOUSE SCROLL */
+      .on("mousewheel DOMMouseScroll", mouseScroll)
 
       /** MOUSE EVENT LISTENERS */
       .mousemove(e => {
@@ -107,6 +141,19 @@ export default class Canvas {
       .translateEvent("click", Message.Type.MOUSE_CLICK, mousePos)
       .translateEvent("mousedown", Message.Type.MOUSE_DOWN, mousePos)
       .translateEvent("mouseup", Message.Type.MOUSE_UP, mousePos);
+
+    return this;
+  }
+
+  /**
+   * Init all listeners
+   * @returns {Canvas}
+   * @private
+   */
+  _initListeners() {
+    return this
+      ._initKeyboard()
+      ._initMouse();
   }
 
   /**
@@ -116,7 +163,7 @@ export default class Canvas {
    */
   broadcast(data, currentState=true) {
     if(currentState)
-      this.states[this.activeState].onEvent(data);
+      !_.isFunction(this.currentState) && this.currentState.onEvent(data);
     else
       _.each(this.states, state => {
         state.onEvent(data);
@@ -125,34 +172,63 @@ export default class Canvas {
   }
 
   /**
-   * Set state
-   * @param name        State's name
-   * @param state       State object
-   * @param setDefault  Set state default
+   * Init state socket
+   * @param state State
+   * @private
    */
-  state(name, state, setDefault=false) {
-    console.assert(!this.states[name], "Application state already exists!");
+  static _initStateSocketListeners(state) {
+    state.waitingForSocket = false;
+    _.each(state.listeners, (callback, func) =>
+      Client.socket.on(func, callback.bind(state))
+    );
+  }
 
-    // Set state and init
-    this.states[name] = state;
-    if(setDefault || _.size(this.states) === 1)
-      this.activeState = name;
-
+  /**
+   * Load state if is not initialized
+   * @param state State
+   * @private
+   */
+  _initState(state) {
     // Copy size of parent
     if(!state.rect.w)
       state.rect.wh = this.context.size.wh;
 
-    // Add parent
     state.canvas = this;
+    state.waitingForSocket = true;
     state.init();
 
     // Load resources
     _.each(state.assets, (val, key) =>  this.context.loadResource(key, val));
+    return state;
+  }
 
-    // Open listeners
-    _.each(state.listeners, (callback, func) =>
-      Client.socket.on(func, callback.bind(state))
-    );
+  /**
+   * Set state
+   * @param name        State's name
+   * @param State       State class
+   * @param setDefault  Set state default
+   */
+  state(name, State, setDefault=false) {
+    console.assert(!this.states[name], "Application state already exists!");
+
+    // Set state and init
+    this.states[name] = new State;
+    if(setDefault || _.size(this.states) === 1)
+      this.activeState = name;
+
+    // Init on adding
+    this._initState(this.states[name]);
+    return this;
+  }
+
+  /**
+   * Method called after connected to server
+   * @returns {Canvas}
+   */
+  openSocketListeners() {
+    _.each(this.states, state => {
+      state.waitingForSocket && Canvas._initStateSocketListeners(state);
+    });
     return this;
   }
 
@@ -177,7 +253,7 @@ export default class Canvas {
           .drawText(title, new Vec2(this.context.size.w / 2 - this.context.textWidth(title) / 2, this.context.size.h - 18));
 
       } else {
-        let state = this.states[this.activeState];
+        let state = this.currentState;
         if(state) {
           // Fixed step update
           if(delta >= frameTime) {

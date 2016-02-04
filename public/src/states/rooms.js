@@ -5,6 +5,7 @@ import { Rect } from "shared/math";
 
 import { Button, Radio } from "../ui/button";
 import { Text } from "../engine/wrapper";
+import ListBox from "../ui/listbox";
 
 import Table from "../ui/table";
 import Popup from "../ui/popup";
@@ -20,8 +21,10 @@ import Client from "../multiplayer/client";
 export default class RoomList extends State {
   constructor() {
     super(Layer.VBox);
+
     this.table = new Table([
-        ["Name", .6]
+        ["", .03, column => new ListBox.ImageItem(`assets/flags/${column}.png`)]
+      , ["Name", .57]
       , ["Pass", .2]
       , ["Total", .2]
     ]);
@@ -31,28 +34,18 @@ export default class RoomList extends State {
    * Fetch new room list from server
    * @private
    */
-  _reloadRoomList() {
+  reloadRoomList() {
     let reloadList = list => {
       // Remove old data
       this.table.clear();
 
       // Add each row to listBox
-      _.each(list, data => {
-        // Truncate title e.g. Gunwogunwo => Gunwo...
-        data = _.chain(data)
-          .values()
-          // TODO: it may cause error with auth to server
-          //.map(_.partial(_.truncate, _, { length: 26 }))
-          .value();
-
-        // Add new row to ListBox inside table
-        this.table.add(data);
-      });
+      _.each(list, data => this.table.add(_.values(data)));
     };
     Client
       .emit("listRooms")
       .then(reloadList)
-      .catch(_.partial(console.log, "Cannot fetch list of channels..."));
+      .catch(_.partial(Popup.confirm, this, "Cannot fetch channels!", Popup.Type.OK));
   }
 
   /**
@@ -68,12 +61,10 @@ export default class RoomList extends State {
         return data.isLocked && Popup.input(this, "Password:") || "";
       })
       .then(password => {
-        return Client.emit("authorizeToRoom", { pass: password });
+        return Client.emit("authorizeToRoom", {pass: password});
       })
       // Redirect to new state
-      .then(() => {
-        this.canvas.activeState = "board";
-      })
+      .then(() => this.canvas.activeState = "board")
 
       // Show server error
       .catch(_.partial(Popup.confirm, this));
@@ -82,25 +73,22 @@ export default class RoomList extends State {
   /** @inheritdoc */
   init() {
     // List of channels
-    this.add(this.table, { fill: [1.0, .9] });
+    this.add(this.table, {fill: [1., .7]});
 
     // List methods
-    let toolbar = this.add(new Layer(Layer.HBox, new Rect), { fill: [1.0, .1] });
+    let toolbar = this.add(new Layer(Layer.HBox), {fill: [1., .3]});
+    toolbar.add(new RoomList.CreatorPopup, {fill: [.7, 1.]});
+
+    // Room list utils
+    let utils = toolbar.add(new Layer(Layer.HBox), {fill: [.3, 1.]});
 
     // Refresh button
-    toolbar
+    utils
       .add(new Button(new Rect(0, 0, 90, 16), "Refresh"))
-      .addForwarder(Message.Type.MOUSE_CLICK, this._reloadRoomList.bind(this));
+      .addForwarder(Message.Type.MOUSE_CLICK, this.reloadRoomList.bind(this));
 
     // Create room button
-    toolbar
-      .add(new Button(new Rect(0, 0, 90, 16), "Create"))
-      .addForwarder(Message.Type.MOUSE_CLICK, () => {
-        this.showPopup(new RoomList.CreatorPopup);
-      });
-
-    // Create room button
-    toolbar
+    utils
       .add(new Button(new Rect(0, 0, 90, 16), "Join"))
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
         // Join to selected room
@@ -110,15 +98,16 @@ export default class RoomList extends State {
         else
           Popup.confirm(this, "Choose room first!");
       });
-
-    // Reload rooms
-    this._reloadRoomList();
   }
 };
 
-RoomList.CreatorPopup = class extends Popup {
+/**
+ * Room creator popup
+ * @class
+ */
+RoomList.CreatorPopup = class extends Layer {
   constructor() {
-    super(Layer.GridBox(2, 7), new Rect(0, 0, 350, 300), "Room creator");
+    super(Layer.HBox, new Rect);
   }
 
   /**
@@ -137,10 +126,7 @@ RoomList.CreatorPopup = class extends Popup {
 
       // After created
       .then(_.partial(Popup.confirm, this, "Success!", Popup.Type.OK))
-      .then(() => {
-        this.hide();
-        this.canvas.activeState = "board";
-      })
+      .then(() => this.canvas.activeState = "board")
 
       // On error
       .catch(_.partial(Popup.confirm, this));
@@ -148,26 +134,29 @@ RoomList.CreatorPopup = class extends Popup {
 
   /** @inheritdoc */
   init() {
+    let left = this.add(new Layer(Layer.GridBox(2, 4)), {fill: [.7, 1.]});
+
+    // Title
+    left.add(new Text(new Rect(0, 0, 0, 13), "Create room"), {expand: 2});
+
     // Room name row
-    this.add(new Text(new Rect(0, 0, 0, 14), "Room name:"));
-    this.name = this.add(new TextBox(new Rect(0, 0, 0, 16)), { fill: [.5, .0] });
+    left.add(new Text(new Rect(0, 0, 0, 14), "Room name:"));
+    this.name = left.add(new TextBox(new Rect(0, 0, 0, 16)), {fill: [.5, .0]});
 
     // Password row
-    this.add(new Text(new Rect(0, 0, 0, 14), "Password:"));
-    this.pass = this.add(new TextBox(new Rect(0, 0, 0, 16)), { fill: [.5, .0] });
+    left.add(new Text(new Rect(0, 0, 0, 14), "Password:"));
+    this.pass = left.add(new TextBox(new Rect(0, 0, 0, 16)), {fill: [.5, .0]});
 
     // Creator row
-    this.hidden = this.add(new Radio(new Rect(0, 0, 16, 14), "Hidden"));
-    this
+    this.hidden = left.add(new Radio(new Rect(0, 0, 16, 14), "Hidden"));
+    left
       .add(new Button(new Rect(0, 0, 118, 16), "Create room!"))
       .addForwarder(Message.Type.MOUSE_CLICK, this.createRoom.bind(this));
 
     // Max players count
-    this.players = this.add(new Table([["Players:", 1.0]], new Rect(0, 0, 0, 110)), { fill: [1.0, .0] });
+    this.players = this.add(new Table([["Players:", 1.0]]), {fill: [.3, 1.]});
     this.players
       .setRows(["2", "4", "6", "8", "10", "12", "16", "18"])
       .listbox.setSelectedIndex(1);
-
-    this.makeCloseable();
   }
 };

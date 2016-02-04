@@ -17,7 +17,9 @@ export default class TextBox extends Control {
    */
   constructor(rect, text="") {
     super(rect);
+
     this.text = text;
+    this.textModified = false;
   }
 
   /** @inheritdoc */
@@ -37,6 +39,7 @@ export default class TextBox extends Control {
         default:
           this.text += String.fromCharCode(event.data);
       }
+      this.textModified = true;
       return true;
     }
   }
@@ -72,8 +75,13 @@ export default class TextBox extends Control {
       text = text.substring(text.length - visibleCharacters);
     }
 
+    // Modify text color
+    let textColor = "WHITE";
+    if(this.state == Message.Type.MOUSE_CLICK) textColor = "GREEN";
+    else if(!this.textModified) textColor = "GRAY";
+
     context
-      .fillWith(Color.Hex[this.state == Message.Type.MOUSE_CLICK ? 'GREEN' : 'WHITE'])
+      .fillWith(Color.Hex[textColor])
       .drawText(text, new Vec2(
           this.rect.x + 5
         , this.rect.y + this.rect.h / 2 + fontSize * .4

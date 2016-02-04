@@ -298,8 +298,8 @@ Layer.GridBox = function(cols, rows) {
 
     // New position
     let pos =
-            [ colIndex * this.rect.w / cols + this.padding.x
-            , this.rect.h / rows * Math.floor(this.gridChildren / cols)  + this.padding.y
+            [ (this.rect.w - this.padding.x * 2) / cols * colIndex + this.padding.x
+            , (this.rect.h - this.padding.y * 2) / rows * Math.floor(this.gridChildren / cols) + this.padding.y
             ];
 
     this.gridChildren += ((opts && opts.expand) || 1);

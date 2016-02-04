@@ -23,9 +23,7 @@ export default class Board extends State {
     super(Layer.BorderBox);
   }
 
-  /**
-   * State resources
-   */
+  /** @inheritdoc */
   get assets() {
     return {
       tile: "assets/tile.png"
@@ -166,6 +164,7 @@ Board.Projector = class extends Layer {
     });
 
     // Render players
+    context.setFontSize(16);
     _.each(this.children, (player, index) => {
       let isBall = player[3] & 0b100;
 
@@ -208,10 +207,10 @@ Board.Projector = class extends Layer {
       // Draw colors
       context
         .fillWith("#e20000")
-        .fillRect(new Rect(scorePos - 50, 5, 38, 28))
+        .fillRect(new Rect(scorePos - 80, 5, 38, 28))
 
         .fillWith("#4b71ff")
-        .fillRect(new Rect(scorePos + textWidth + 12, 5, 38, 28));
+        .fillRect(new Rect(scorePos + textWidth + 42, 5, 38, 28));
     }
   }
 

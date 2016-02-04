@@ -13,6 +13,7 @@ export default class Table extends Layer {
   constructor(headers, rect) {
     super(Layer.VBox, rect);
     this.padding.xy = [0, 0];
+    this.columnHandler = {};
 
     // Initialise table
     this.init = () => {
@@ -29,15 +30,16 @@ export default class Table extends Layer {
 
   /**
    * Clear all childs and add header row
-   * @param headers Headers eg. [["DUPA", .2], ["KUPA", .3]]
+   * @param headers Headers eg. [["DUPA", .2, (column, index)=>{}], ["KUPA", .3]]
    * @returns {Table}
    */
   setHeaders(headers) {
     this.header.clear();
 
     // Add headers
-    _.each(headers, ([title, size]) => {
+    _.each(headers, ([title, size, callback], index) => {
       this.header.add(new Text(new Rect, title), { fill: [size, 1.0] });
+      this.columnHandler[index] = callback;
     });
 
     // Size of columns
@@ -71,13 +73,13 @@ export default class Table extends Layer {
    */
   add(values) {
     let row = this.listbox.add(new ListBox.Row);
+    values = this.header.children.length === 1 ? [values] : values;
 
     // Add each column to row
-    _.each(
-        this.header.children.length === 1 ? [values] : values
-      , (column, index) => {
-        row.add(new ListBox.Item(column), { fill: [this.columns[index], 1.0] });
-      });
+    _.each(values, (column, index) => {
+      let handler = this.columnHandler[index];
+      row.add(handler ? handler(column, index) : new ListBox.Item(column), {fill: [this.columns[index], 1.]});
+    });
     return row;
   }
 

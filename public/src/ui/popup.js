@@ -19,7 +19,7 @@ export default class Popup extends Layer {
     super(layout, rect);
 
     this.title = title;
-    this.padding.xy = [5, 42];
+    this.padding.xy = [5, 23];
     this.init();
   }
 
@@ -54,8 +54,10 @@ export default class Popup extends Layer {
    */
   static confirm(layer, title, type=Popup.Type.OK) {
     return new Promise((resolve, reject) => {
-      let popup = layer.showPopup(new Popup(null, new Rect(0, 0, 300, 70), title))
+      let popup = layer.showPopup(new Popup(null, new Rect(0, 0, 300, 70), "Message"))
         , pos = 300 - 5;
+
+      popup.add(new Text(new Rect(popup.padding.x, 20, 0, 16), title), {fill:[1., 0.]});
 
       if(type == Popup.Type.OK)
         popup
@@ -90,10 +92,10 @@ export default class Popup extends Layer {
     if(this.title)
       context
         .fillWith(Color.Hex.WHITE)
-        .setFontSize(15)
+        .setFontSize(12)
         .drawText(this.title, new Vec2(
             this.rect.x + this.padding.x
-          , this.rect.y + 20
+          , this.rect.y + 12
         ));
 
     // Draw children

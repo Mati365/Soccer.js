@@ -76,17 +76,6 @@ export default class Context {
   }
 
   /**
-   * Render sprite
-   * @param resource  Resource name
-   * @param rect      Position and size
-   * @returns {Context}
-   */
-  drawImage(resource, rect) {
-    this.ctx.drawImage(this.resources[resource], rect.x, rect.y, rect.w, rect.h);
-    return this;
-  }
-
-  /**
    * Draw line from p1 to p2
    * @param p1    Begin
    * @param p2    End
@@ -210,6 +199,20 @@ export default class Context {
    */
   fill() {
     this.ctx.fill();
+    return this;
+  }
+
+  /**
+   * Render sprite
+   * @param resource  Resource name
+   * @param rect      Position and size
+   * @returns {Context}
+   */
+  drawImage(resource, rect) {
+    if(!this.resources[resource])
+      this.loadResource(resource, resource);
+    else
+      this.ctx.drawImage(this.resources[resource], rect.x, rect.y, rect.w, rect.h);
     return this;
   }
 

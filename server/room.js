@@ -146,10 +146,13 @@ class Room {
           vy *= 8;
         }
 
+        // "weight"
+        p1.v.mul(.9);
+
         // Add to velocity vector
-        p2.v.x += vx;
-        p2.v.y += vy;
-        //p2.circle.add(p2.v);
+        p2.v.x = vx * p1.v.length;
+        p2.v.y = vy * p1.v.length;
+        p2.circle.add(p2.v);
       }
     }
   }
@@ -165,6 +168,24 @@ class Room {
     this
       .broadcast("roomScore", _.mapValues(this.goals, "score"))
       .start();
+    return this;
+  }
+
+  /**
+   * Check collisions with board border
+   * @param body    BoardBody
+   * @param margin  Margin
+   * @returns {Room}
+   * @private
+   */
+  _calcBordersCollisions(body, margin) {
+    margin = margin || 0;
+
+    if(body.circle.y < -margin || body.circle.y + body.circle.r * 2 > this.board.h + margin)
+      body.v.y *= -1;
+    if(body.circle.x < -margin || body.circle.x + body.circle.r * 2 > this.board.w + margin)
+      body.v.x *= -1;
+
     return this;
   }
 
@@ -191,7 +212,7 @@ class Room {
       if(!isBall)
         Room.checkCollisions(cachedPlayers, index);
 
-      // Check collisions with borders
+      // Check collisions with goals
       if(isBall && !this.board.contains(circle)) {
         // Create colliding box for each goal and check
         let collidingGoal = _.findKey(this.goals, goal => {
@@ -203,16 +224,20 @@ class Room {
           );
           return rect.intersect(circle);
         });
+
+        // If its colliding with goal
         if(collidingGoal) {
           this._addGoal(collidingGoal);
           return false;
-        } else
-          v.mul(-1);
+        }
       }
+
+      // Check collisions with borders
+      this._calcBordersCollisions(player.body, !isBall && 64);
 
       // Update physics
       circle.add(v);
-      v.xy = [v.x * .95, v.y * .95];
+      v.mul(.95);
 
       // Data structure: 0FFFFBRR
       let flags =
@@ -243,7 +268,7 @@ class Room {
   start() {
     // Set ball
     this.ball = {
-      body: new BoardBody(this, new Circle(this.board.w / 2 - 5, this.board.h / 2 - 5, 10))
+      body: new BoardBody(this, new Circle(this.board.w / 2 - 12, this.board.h / 2 - 12, 12))
     };
 
     // Start interval
@@ -279,10 +304,12 @@ class Room {
    * @returns {Room}
    */
   _alignOnBoard(player) {
-    if(this.board.w > this.board.h) {
-
-    } else {
-
+    if(player.team !== Room.Teams.SPECTATORS) {
+      let goal = this.goals[player.team];
+      player.body.circle.xy = [
+          (goal.p1[0] + goal.p2[0]) / 2 - player.body.circle.r
+        , (goal.p1[1] + goal.p2[1]) / 2 - player.body.circle.r
+      ];
     }
     return this;
   }
@@ -368,7 +395,8 @@ class Room {
   static headers() {
     return _.map(Room.list, room => {
       return {
-          name: room.name
+          country: room.admin.country
+        , name: room.name
         , password: room.isLocked() ? "yes" : "no"
         , players: room.players.length + "/" + room.maxPlayers
       };

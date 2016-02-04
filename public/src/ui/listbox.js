@@ -157,6 +157,7 @@ export default class ListBox extends Layer {
 
 /**
  * ListBox Item
+ * @class
  */
 ListBox.Item = class extends Radio {
   constructor(text) {
@@ -173,11 +174,10 @@ ListBox.Item = class extends Radio {
     );
 
     // Background color
-    if(this.checked) {
+    if(this.checked)
       context
         .fillWith(fillColor)
         .fillRect(this.rect);
-    }
 
     // Border and text
     context
@@ -188,7 +188,24 @@ ListBox.Item = class extends Radio {
 };
 
 /**
+ * Image item
+ * @class
+ */
+ListBox.ImageItem = class extends Radio {
+  constructor(sprite) {
+    super(new Rect, "");
+    this.sprite = sprite;
+  }
+
+  /** @inheritdoc */
+  draw(context) {
+    context.drawImage(this.sprite, this.rect);
+  }
+};
+
+/**
  * Row of items
+ * @class
  */
 ListBox.Row = class extends Layer {
   constructor() {

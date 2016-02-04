@@ -4,7 +4,8 @@ open source HaxBall clone written in ES6
 
 ## Screenshots
 ![Room](/screenshots/1.png?raw=true "Room")
-![Settings](/screenshots/2.png?raw=true "Room settings")
+![List](/screenshots/2.png?raw=true "Room list")
+![Connect](/screenshots/3.png?raw=true "Room connection")
 
 ## Todo
 
@@ -12,7 +13,7 @@ open source HaxBall clone written in ES6
 - [x] Room listing
 - [x] Room creation
 - [x] Room players management
-- [ ] Soccer match logic 
+- [x] Soccer match logic 
 - [ ] Better UI
 - [ ] Multiple locale support
 

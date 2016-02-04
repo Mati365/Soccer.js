@@ -198,8 +198,8 @@ class Circle extends Vec2 {
    * @returns {number}
    */
   distance(circle) {
-    let x = this.x + this.r / 2 - circle.x - circle.r / 2
-      , y = this.y + this.r / 2 - circle.y - circle.r / 2;
+    let x = this.x + this.r - circle.x - circle.r
+      , y = this.y + this.r - circle.y - circle.r;
     return Math.sqrt(x*x + y*y);
   }
 
