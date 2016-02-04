@@ -65,7 +65,7 @@ class Player {
       .on("askToConnect", function(data, fn) {
         let room = _.find(Room.list, data);
         if(!room || room.isFull())
-          fn({error: "Room is full :("});
+          fn({error: "Cannot join :("});
         else
           fn({isLocked: room.isLocked()});
 

@@ -92,9 +92,9 @@ export default class RoomList extends State {
       .add(new Button(new Rect(0, 0, 90, 16), "Join"))
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
         // Join to selected room
-        let selectedRow = this.table.listbox.selected;
-        if(selectedRow)
-          this._joinRoom(selectedRow[0]);
+        let selectedCol = this.table.listbox.selected;
+        if(selectedCol)
+          this._joinRoom(selectedCol[1]);
         else
           Popup.confirm(this, "Choose room first!");
       });
