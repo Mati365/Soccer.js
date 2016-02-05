@@ -29,15 +29,16 @@ class Room {
 
     // Ball is separated object
     // todo: Vertical gates
-    this.board = new Rect(0, 0, 500, 250);
+    this.board = new Rect(0, 0, 600, 300);
     this.goals = {
-        0: {size: 30, sign: -1, p1: [0, 40], p2: [0, 190], score: 0}
-      , 2: {size: 30, sign: 1, p1: [500, 40], p2: [500, 190], score: 0}
+        0: {size: 30, sign: -1, p1: [0, 70], p2: [0, 230], score: 0}
+      , 2: {size: 30, sign: 1, p1: [600, 70], p2: [600, 230], score: 0}
     };
 
     // Players
     this.players = [];
-    this.admin = this.join(admin);
+    this.admin = admin;
+    this.join(admin);
 
     // hide room in rooms list
     if(hidden !== true)
@@ -123,7 +124,7 @@ class Room {
    * @param test    Only tests
    * @private
    */
-  static checkCollisions(players, index, test) {
+  _checkCollisions(players, index, test) {
     let p1 = players[index].body
       , c1 = p1.circle.center
       , hasCollision = false;
@@ -152,8 +153,17 @@ class Room {
           // "weight"
           p1.v.mul(.9);
 
+          // Make ball owner
+          if(!p1.owner || p1.owner === -1)
+            p1.owner = i;
+
           // Add to velocity vector
-          if(index !== players.length - 1) {
+          if(index !== players.length - 1
+              || p1.owner !== i
+              || (Math.sign(p2.v.y) > 0 && p1.circle.y + p1.circle.r * 2 + 5 >= this.board.y + this.board.h)
+              || (Math.sign(p2.v.y) < 0 && p1.circle.y - 5 <= this.board.y)
+              || (Math.sign(p2.v.x) > 0 && p1.circle.x + p1.circle.r * 2 + 5 >= this.board.x + this.board.w)
+              || (Math.sign(p2.v.x) < 1 && p1.circle.x - 5 <= this.board.x)) {
             p2.v.x += vx * p1.v.length;
             p2.v.y += vy * p1.v.length;
             p2.circle.add(p2.v);
@@ -164,6 +174,8 @@ class Room {
         hasCollision = true;
       }
     }
+    if(!hasCollision)
+      players[players.length - 1].owner = -1;
     return hasCollision;
   }
 
@@ -181,7 +193,7 @@ class Room {
       ];
 
       // Move to center if has collision
-      while(Room.checkCollisions(this.players, _.indexOf(this.players, player), true)) {
+      while(this._checkCollisions(this.players, _.indexOf(this.players, player), true)) {
         let direction = this.board.center.sub(player.body.circle).normalize();
         player.body.circle.add(direction.mul(player.body.circle.r * 2 + 2));
       }
@@ -242,7 +254,7 @@ class Room {
 
       // Check collisions without ball
       //if(!isBall)
-        Room.checkCollisions(cachedPlayers, index);
+        this._checkCollisions(cachedPlayers, index);
 
       // Check collisions with goals
       if(isBall && !this.board.contains(circle)) {
@@ -355,6 +367,7 @@ class Room {
         teams: this.teamsHeaders
       , board: this.board.xywh
       , goals: this.goals
+      , admin: this.admin.nick
     };
     (socket ? socket.emit.bind(socket) : this.broadcast.bind(this))("roomSettings", data);
     return this;

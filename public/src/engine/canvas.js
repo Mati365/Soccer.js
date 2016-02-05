@@ -61,11 +61,14 @@ export default class Canvas {
 
     // Handle key down
     let keyDownHandler = e => {
+      let illegalCharacter = ~illegalCharacters.indexOf(e.which);
+
       this.pressedKeys[e.which] = true;
       this.broadcast(new Message(
-          Message.Type[~illegalCharacters.indexOf(e.which) ? 'KEY_ENTER' : 'KEY_DOWN']
+          Message.Type[illegalCharacter ? 'KEY_ENTER' : 'KEY_DOWN']
         , this, e.which
       ));
+      illegalCharacter && e.preventDefault();
     };
 
     // Handle key press
@@ -78,6 +81,7 @@ export default class Canvas {
     let keyUpHandler = e => {
       this.pressedKeys[e.which] = false;
       this.broadcast(new Message(Message.Type.KEY_UP, this, e.which));
+      e.preventDefault();
     };
 
     $(this.context.domElement)

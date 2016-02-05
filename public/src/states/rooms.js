@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import { State, Layer } from "../engine/object";
 import { Rect } from "shared/math";
+import Color from "shared/color";
 
 import { Button, Radio } from "../ui/button";
 import { Text } from "../engine/wrapper";
@@ -81,7 +82,7 @@ export default class RoomList extends State {
     toolbar.add(new RoomList.CreatorPopup, {fill: [.7, 1.]});
 
     // Room list utils
-    let utils = toolbar.add(new Layer(Layer.HBox), {fill: [.3, 1.]});
+    let utils = toolbar.add(new Layer(Layer.GridBox(2, 3)), {fill: [.3, 1.]});
 
     // Refresh button
     utils
@@ -99,6 +100,10 @@ export default class RoomList extends State {
         else
           Popup.confirm(this, "Choose room first!");
       });
+
+    // Version title
+    utils.add(new Text(new Rect(0, 0, 90, 14), "Soccer.JS", "#232323"), {expand: 2});
+    utils.add(new Text(new Rect(0, 0, 90, 14), "Ver. 1.0", "#232323"), {expand: 2});
   }
 };
 

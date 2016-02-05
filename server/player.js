@@ -44,7 +44,7 @@ class Player {
         let validation = validate(data, {
             name: {
               presence: true
-            , length: {minimum: 2, maximum: 32}
+            , length: {minimum: 2, maximum: 34}
           }
           , players: {numericality: {lessThanOrEqualTo: 20}}
         });
@@ -84,6 +84,11 @@ class Player {
       .on("setTeam", data => {
         let player = Player.nick(data.nick);
         player && player.room.setTeam(player, data.team);
+      })
+
+      /** Leave from room */
+      .on("roomLeave", nick => {
+        this.room && this.room.leave(Player.nick(nick));
       })
 
       /** Kick player from room */

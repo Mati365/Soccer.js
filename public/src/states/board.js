@@ -8,8 +8,11 @@ import { Sprite } from "../engine/wrapper";
 import Popup from "../ui/popup";
 
 import { Button } from "../ui/button";
+import { Text } from "../engine/wrapper";
+
 import ListBox from "../ui/listbox";
 import Table from "../ui/table";
+import TextBox from "../ui/textbox";
 
 import Message from "../engine/message";
 import Client from "../multiplayer/client";
@@ -37,7 +40,10 @@ export default class Board extends State {
     let listeners = {};
     // Fetch all players from all teams
     listeners['roomSettings'] = data => {
-      // Load teams
+      // Load player  panel
+      if(data.admin !== Client.user.nick)
+        this.settings.disableAdminPanel();
+
       _.each(this.settings.teams, (listBox, key) => listBox.setRows(data.teams[key] || []));
 
       // Get board list
@@ -66,10 +72,7 @@ export default class Board extends State {
     listeners['roomKick'] = message => {
       Popup
         .confirm(this, message)
-        .then(() => {
-          this.canvas.activeState = "roomList";
-          this.projector.clear();
-        });
+        .then(this._showRoomList.bind(this));
     };
 
     // Get room changes
@@ -79,6 +82,17 @@ export default class Board extends State {
     };
 
     return listeners;
+  }
+
+  /**
+   * Return to room list and clear all data
+   * @private
+   */
+  _showRoomList() {
+    this.canvas
+      .setState("roomList")
+      .reloadRoomList();
+    this.projector.clear();
   }
 
   /** @inheritdoc */
@@ -91,7 +105,11 @@ export default class Board extends State {
 
     // UI buttons
     this
-      .add(new Button(new Rect(0, 0, 100, 16), "Exit"), {align: [0., 1.]});
+      .add(new Button(new Rect(0, 0, 100, 16), "Exit"), {align: [0., 1.]})
+      .addForwarder(Message.Type.MOUSE_CLICK, () => {
+        Client.emit("roomLeave", Client.user.nick);
+        this._showRoomList();
+      });
 
     this
       .add(new Button(new Rect(0, 0, 100, 16), "Options"), {align: [1., 1.]})
@@ -204,10 +222,9 @@ Board.Projector = class extends Layer {
       let textWidth = context.textWidth(text)
         , scorePos = this.rect.w / 2 - textWidth / 2;
 
-      context.drawText(text, new Vec2(scorePos, 25));
-
-      // Draw colors
       context
+        .drawText(text, new Vec2(scorePos, 25))
+
         .fillWith("#e20000")
         .fillRect(new Rect(scorePos - 80, 5, 38, 28))
 
@@ -298,30 +315,10 @@ Board.SettingsPopup = class extends Popup {
   }
 
   /**
-   * Create teams panel
-   * @private
+   * Show admin panels
    */
-  _createTeamsPanel() {
-    let teamsBox = this.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 200)), { fill: [1., .0] });
-
-    // Left
-    this.teams = [];
-    this.teams[0] = teamsBox.add(new Table([["Left", 1.0]]), { fill: [.33, 1.] });
-
-    // Toolbox
-    let toolbox = teamsBox.add(new Layer(Layer.VBox), { fill: [.34, 1.] });
-    this.teams[1] = toolbox.add(new Table([["Spectators", 1.]]), { fill: [1., .7] });
-
-    toolbox
-      .add(new Button(new Rect, "<"), { fill: [1., .1] })
-      .addForwarder(Message.Type.MOUSE_CLICK, this._changeTeam.bind(this, -1));
-
-    toolbox
-      .add(new Button(new Rect, ">"), { fill: [1., .1] })
-      .addForwarder(Message.Type.MOUSE_CLICK, this._changeTeam.bind(this, 1));
-
-    // Right
-    this.teams[2] = teamsBox.add(new Table([["Right", 1.]]), { fill: [.33, 1.] });
+  disableAdminPanel() {
+    this.userPanel.disabled = this.matchPanel.disabled = true;
     return this;
   }
 
@@ -330,15 +327,54 @@ Board.SettingsPopup = class extends Popup {
    * @private
    */
   _createUserPanel() {
-    let hBox = this.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 20)), { fill: [1., 0. ] });
-    hBox
-      .add(new Button(new Rect(0, 0, 64, 0), "Kick"), { fill: [0., 1.] })
+    this.userPanel = this.toolbox.add(new Layer(Layer.HBox), {fill: [1., .2]});
+    this.userPanel
+      .add(new Button(new Rect, "<"), {fill: [.5, 1.]})
+      .addForwarder(Message.Type.MOUSE_CLICK, this._changeTeam.bind(this, -1));
+
+    this.userPanel
+      .add(new Button(new Rect, ">"), {fill: [.5, 1.]})
+      .addForwarder(Message.Type.MOUSE_CLICK, this._changeTeam.bind(this, 1));
+
+    return this;
+  }
+
+  /**
+   * Create user management panel
+   * @private
+   */
+  _createMatchPanel() {
+    this.matchPanel = this.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 20)), {fill: [1., 0. ]});
+    this.matchPanel
+      .add(new Button(new Rect(0, 0, 64, 0), "Kick"), {fill: [0., 1.]})
       .addForwarder(Message.Type.MOUSE_CLICK, () => {
         Client.emit("roomKick", this.selectedPlayer);
       });
-    hBox
-      .add(new Button(new Rect(0, 0, 64, 0), "Start"), { fill: [0., 1.] })
+
+    // Begin game
+    this.matchPanel
+      .add(new Button(new Rect(0, 0, 64, 0), "Start"), {fill: [0., 1.]})
       .addForwarder(Message.Type.MOUSE_CLICK, _.partial(Client.emit, "roomStart", null));
+    return this;
+  }
+
+  /**
+   * Create teams panel
+   * @private
+   */
+  _createTeamsPanel() {
+    let teamsBox = this.add(new Layer(Layer.HBox, new Rect(0, 0, 0, 200)), {fill: [1., .0]});
+
+    // Left
+    this.teams = [];
+    this.teams[0] = teamsBox.add(new Table([["Left", 1.0]]), {fill: [.33, 1.]});
+
+    // Toolbox
+    this.toolbox = teamsBox.add(new Layer(Layer.VBox), {fill: [.34, 1.]});
+    this.teams[1] = this.toolbox.add(new Table([["Spectators", 1.]]), {fill: [1., .8]});
+
+    // Right
+    this.teams[2] = teamsBox.add(new Table([["Right", 1.]]), {fill: [.33, 1.]});
     return this;
   }
 
@@ -346,6 +382,7 @@ Board.SettingsPopup = class extends Popup {
   init() {
     this
       ._createTeamsPanel()
+      ._createMatchPanel()
       ._createUserPanel()
       .makeCloseable();
   }
