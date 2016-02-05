@@ -75,7 +75,7 @@ export default class Board extends State {
     // Get room changes
     listeners['roomUpdate'] = data => {
       if(this.projector)
-        this.projector.children = _.chunk(new Float32Array(data), 6);
+        this.projector.children = _.chunk(new Float32Array(data), 4);
     };
 
     return listeners;

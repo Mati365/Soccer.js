@@ -153,9 +153,11 @@ class Room {
           p1.v.mul(.9);
 
           // Add to velocity vector
-          p2.v.x += vx * p1.v.length;
-          p2.v.y += vy * p1.v.length;
-          p2.circle.add(p2.v);
+          if(index !== players.length - 1) {
+            p2.v.x += vx * p1.v.length;
+            p2.v.y += vy * p1.v.length;
+            p2.circle.add(p2.v);
+          }
         }
 
         // Mark flag
@@ -229,8 +231,8 @@ class Room {
       this.ball
     ]);
 
-    // Socket data [x, y, r, flag, v.x, v.y]
-    let packSize = 6
+    // Socket data [x, y, r, flag]
+    let packSize = 4
       , socketData = new Float32Array(cachedPlayers.length * packSize);
 
     _.each(cachedPlayers, (player, index) => {
@@ -239,7 +241,7 @@ class Room {
         , isBall = index === cachedPlayers.length - 1;
 
       // Check collisions without ball
-      if(!isBall)
+      //if(!isBall)
         Room.checkCollisions(cachedPlayers, index);
 
       // Check collisions with goals
@@ -281,11 +283,14 @@ class Room {
         , circle.y
         , circle.r
         , flags /** todo: More flags */
-
-        /** velocity */
-        , v.x
-        , v.y
-      ], index * packSize)
+      ], index * packSize);
+      //
+      ///**
+      // * Data in buffer is compressed, player must
+      // * know which from the list is player
+      // * todo: Fix it, merge with roomSettings
+      // */
+      //player.socket("roomPlayerIndex", index);
     });
 
     // Broadcast
@@ -374,7 +379,7 @@ class Room {
     // Broadcast to except player
     player.socket.broadcast
       .to(this.name)
-      .emit("roomPlayerJoin", _.pick(player, ["nick", "team"]));
+      .emit("roomPlayerJoin", _.pick(player, "nick", "team"));
 
     // Send list of players to player
     this._broadcastSettings(player.socket);

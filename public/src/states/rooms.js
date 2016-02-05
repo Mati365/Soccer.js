@@ -35,16 +35,12 @@ export default class RoomList extends State {
    * @private
    */
   reloadRoomList() {
-    let reloadList = list => {
-      // Remove old data
-      this.table.clear();
-
-      // Add each row to listBox
-      _.each(list, data => this.table.add(_.values(data)));
-    };
     Client
       .emit("listRooms")
-      .then(reloadList)
+      .then(list => {
+        this.table.clear();
+        _.each(list, data => this.table.add(_.values(data)));
+      })
       .catch(_.partial(Popup.confirm, this, "Cannot fetch channels!", Popup.Type.OK));
   }
 
@@ -55,7 +51,8 @@ export default class RoomList extends State {
    */
   _joinRoom(roomName) {
     Client
-      .emit("askToConnect", { name: roomName })
+      .emit("askToConnect", {name: roomName})
+
       // Authorize with password, empty if not
       .then(data => {
         return data.isLocked && Popup.input(this, "Password:") || "";
@@ -63,8 +60,12 @@ export default class RoomList extends State {
       .then(password => {
         return Client.emit("authorizeToRoom", {pass: password});
       })
+
       // Redirect to new state
-      .then(() => this.canvas.activeState = "board")
+      .then(() => {
+        Client.user.room = roomName;
+        this.canvas.activeState = "board";
+      })
 
       // Show server error
       .catch(_.partial(Popup.confirm, this));

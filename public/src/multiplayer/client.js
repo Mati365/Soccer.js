@@ -38,6 +38,14 @@ export default {
   , get ping() { return latency;  }
 
   /**
+   * Server user
+   */
+  , user: {
+      nick: ""
+    , room: ""
+  }
+
+  /**
    * Emit data via socket
    * @param func  Socket function string
    * @param data  Socket data

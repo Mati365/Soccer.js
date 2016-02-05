@@ -40,6 +40,7 @@ Boot.ConnectPopup = class extends Popup {
       .connect(this.ip.text)
       .then(() => Client.emit("setNick", this.nick.text))
       .then(() => {
+        Client.user.nick = this.nick.text;
         this.canvas
           .openSocketListeners()
           .setState("roomList")
