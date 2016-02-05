@@ -41,9 +41,7 @@ export default class Board extends State {
     // Fetch all players from all teams
     listeners['roomSettings'] = data => {
       // Load player  panel
-      if(data.admin !== Client.user.nick)
-        this.settings.disableAdminPanel();
-
+      this.settings.disableAdminPanel(data.admin !== Client.user.nick);
       _.each(this.settings.teams, (listBox, key) => listBox.setRows(data.teams[key] || []));
 
       // Get board list
@@ -315,10 +313,11 @@ Board.SettingsPopup = class extends Popup {
   }
 
   /**
-   * Show admin panels
+   * Disable admin panel
+   * @param disabled  True if disable
    */
-  disableAdminPanel() {
-    this.userPanel.disabled = this.matchPanel.disabled = true;
+  disableAdminPanel(disabled) {
+    this.userPanel.disabled = this.matchPanel.disabled = disabled;
     return this;
   }
 

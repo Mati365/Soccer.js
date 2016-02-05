@@ -334,11 +334,7 @@ class Room {
    */
   setTeam(player, newTeam) {
     // Create new body
-    _.assign(player, {
-        team: newTeam
-      , body: new BoardBody(this, new Circle(60, 60, 13))
-    });
-
+    player.team = newTeam;
     this
       ._alignOnBoard(player)
       ._broadcastSettings();
@@ -383,6 +379,7 @@ class Room {
     _.assign(player, {
         team: Room.Teams.SPECTATORS
       , room: this
+      , body: new BoardBody(this, new Circle(60, 60, 13))
     });
 
     // Join socket
@@ -413,7 +410,7 @@ class Room {
     this.broadcast("roomPlayerLeave", _.pick(player, "team", "nick"));
 
     // Reset variables for future room
-    player.room = player.team = player.body = null;
+    player.room = player.team = null;
 
     _.remove(this.players, player);
     this.admin === player && this.destroy();

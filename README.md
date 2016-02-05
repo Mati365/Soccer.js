@@ -2,11 +2,6 @@ Soccer.js
 ==============
 open source HaxBall clone written in ES6
 
-## Screenshots
-![Room](/screenshots/1.png?raw=true "Room")
-![List](/screenshots/2.png?raw=true "Room list")
-![Connect](/screenshots/3.png?raw=true "Room connection")
-
 ## Todo
 
 - [x] Graphics engine
@@ -16,6 +11,13 @@ open source HaxBall clone written in ES6
 - [x] Soccer match logic 
 - [ ] Better UI
 - [ ] Multiple locale support
+
+## Screenshots
+![Room](/screenshots/1.png?raw=true "Room")
+![List](/screenshots/2.png?raw=true "Room list")
+![Connect](/screenshots/3.png?raw=true "Room connection")
+![Connect](/screenshots/4.png?raw=true "Room options")
+![Connect](/screenshots/5.png?raw=true "Room connection")
 
 ## Installing
 **Build client:**

@@ -101,9 +101,12 @@ export default class RoomList extends State {
           Popup.confirm(this, "Choose room first!");
       });
 
-    // Version title
-    utils.add(new Text(new Rect(0, 0, 90, 14), "Soccer.JS", "#232323"), {expand: 2});
-    utils.add(new Text(new Rect(0, 0, 90, 14), "Ver. 1.0", "#232323"), {expand: 2});
+    utils
+      .add(new Button(new Rect(0, 0, 90, 16), "About"), {expand: 2})
+      .addForwarder(
+          Message.Type.MOUSE_CLICK
+        , _.partial(Popup.confirm, this, "Soccer.JS Ver. 1.0", Popup.Type.OK)
+      );
   }
 };
 
