@@ -64,9 +64,12 @@ export default class Board extends State {
 
     // Kick from room
     listeners['roomKick'] = message => {
-      Popup.confirm(this, message).then(() => {
-        this.canvas.activeState = "roomList";
-      });
+      Popup
+        .confirm(this, message)
+        .then(() => {
+          this.canvas.activeState = "roomList";
+          this.projector.clear();
+        });
     };
 
     // Get room changes
@@ -80,19 +83,18 @@ export default class Board extends State {
 
   /** @inheritdoc */
   init() {
-    //this.settings = this.showPopup(new Board.SettingsPopup);
     this.settings = new Board.SettingsPopup;
 
     // Renderer, it should be under UI!
     this.projector = this
-      .add(new Board.Projector, { align: [0., 0.], fill: [1., 1.] });
+      .add(new Board.Projector, {align: [0., 0.], fill: [1., 1.]});
 
     // UI buttons
     this
-      .add(new Button(new Rect(0, 0, 100, 16), "Exit"), { align: [0., 1.] });
+      .add(new Button(new Rect(0, 0, 100, 16), "Exit"), {align: [0., 1.]});
 
     this
-      .add(new Button(new Rect(0, 0, 100, 16), "Options"), { align: [1., 1.] })
+      .add(new Button(new Rect(0, 0, 100, 16), "Options"), {align: [1., 1.]})
       .addForwarder(Message.Type.MOUSE_CLICK, this.showPopup.bind(this, this.settings));
   }
 };

@@ -120,11 +120,13 @@ class Room {
    * Check room collisions
    * @param players Players array
    * @param index   Player index
+   * @param test    Only tests
    * @private
    */
-  static checkCollisions(players, index) {
+  static checkCollisions(players, index, test) {
     let p1 = players[index].body
-      , c1 = p1.circle.center;
+      , c1 = p1.circle.center
+      , hasCollision = false;
 
     for (let i = 0; i < players.length; ++i) {
       if(i === index)
@@ -136,25 +138,53 @@ class Room {
 
       // If the circles are colliding
       if(p1.circle.intersect(p2.circle)) {
-        let dist = p2.circle.distance(p1.circle)
-          , vx = (c2.x - c1.x) / dist
-          , vy = (c2.y - c1.y) / dist;
+        if(!test) {
+          let dist = p2.circle.distance(p1.circle)
+            , vx = (c2.x - c1.x) / dist
+            , vy = (c2.y - c1.y) / dist;
 
-        // Kick if it's the ball
-        if(i === players.length - 1 && players[index].flags & 2) {
-          vx *= 8;
-          vy *= 8;
+          // Kick if it's the ball
+          if(i === players.length - 1 && players[index].flags & 2) {
+            vx *= 8;
+            vy *= 8;
+          }
+
+          // "weight"
+          p1.v.mul(.9);
+
+          // Add to velocity vector
+          p2.v.x += vx * p1.v.length;
+          p2.v.y += vy * p1.v.length;
+          p2.circle.add(p2.v);
         }
 
-        // "weight"
-        p1.v.mul(.9);
-
-        // Add to velocity vector
-        p2.v.x = vx * p1.v.length;
-        p2.v.y = vy * p1.v.length;
-        p2.circle.add(p2.v);
+        // Mark flag
+        hasCollision = true;
       }
     }
+    return hasCollision;
+  }
+
+  /**
+   * Set player position on board
+   * @param player  Player
+   * @returns {Room}
+   */
+  _alignOnBoard(player) {
+    if(player.team !== Room.Teams.SPECTATORS) {
+      let goal = this.goals[player.team];
+      player.body.circle.xy = [
+          (goal.p1[0] + goal.p2[0]) / 2 - player.body.circle.r
+        , (goal.p1[1] + goal.p2[1]) / 2 - player.body.circle.r
+      ];
+
+      // Move to center if has collision
+      while(Room.checkCollisions(this.players, _.indexOf(this.players, player), true)) {
+        let direction = this.board.center.sub(player.body.circle).normalize();
+        player.body.circle.add(direction.mul(player.body.circle.r * 2 + 2));
+      }
+    }
+    return this;
   }
 
   /**
@@ -295,22 +325,6 @@ class Room {
     this
       ._alignOnBoard(player)
       ._broadcastSettings();
-    return this;
-  }
-
-  /**
-   * Set player position on board
-   * @param player  Player
-   * @returns {Room}
-   */
-  _alignOnBoard(player) {
-    if(player.team !== Room.Teams.SPECTATORS) {
-      let goal = this.goals[player.team];
-      player.body.circle.xy = [
-          (goal.p1[0] + goal.p2[0]) / 2 - player.body.circle.r
-        , (goal.p1[1] + goal.p2[1]) / 2 - player.body.circle.r
-      ];
-    }
     return this;
   }
 

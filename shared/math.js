@@ -126,6 +126,9 @@ class Rect extends Vec2 {
     this.wh = xywh.slice(-2);
   }
 
+  /** Get center */
+  get center() { return new Vec2(this.x + this.w / 2, this.y + this.h / 2); }
+
   /**
    * Remove border
    * @param border  Border size
