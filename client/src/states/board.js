@@ -29,7 +29,7 @@ export default class Board extends State {
   /** @inheritdoc */
   get assets() {
     return {
-      tile: "assets/tile.png"
+      tile: "res/tile.png"
     };
   }
 

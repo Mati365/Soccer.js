@@ -1,7 +1,6 @@
 "use strict";
 const validate = require("validate.js")
     , geoip = require("geoip-lite")
-    , request = require("request")
     , _ = require("lodash");
 
 const { Room } = require("./room")
@@ -17,9 +16,10 @@ class Player {
     this.room = null;
 
     // Get global IP
-    request("https://diagnostic.opendns.com/myip", (err, data) => {
-      this.country = geoip.lookup(data.body).country.toLowerCase();
-    });
+    let ip = geoip.lookup(socket.request.connection.remoteAddress);
+    this.country = ip ? ip.country.toLowerCase() : "ly";
+
+    // Init listeners
     this._initListener();
   }
 

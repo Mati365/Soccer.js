@@ -8,10 +8,8 @@ import { Rect } from "shared/math";
  */
 var Loaders = {};
 Loaders["\.(?:png|jpg|jpeg)$"] = function(path) {
-  return new Promise((resolve, reject) => {
-    $("<img />").attr("src", path).load(e => {
-      resolve(e.target);
-    });
+  return new Promise(resolve => {
+    $("<img />").attr("src", path).load(e => resolve(e.target));
   });
 };
 
@@ -37,8 +35,8 @@ export default class Context {
     }
 
     // Load font
-    Context._loadFont("assets/font.ttf", "Canvas Font");
-    Context._loadFont("assets/score.ttf", "Score Font");
+    Context._loadFont("res/fonts/font.ttf", "Canvas Font");
+    Context._loadFont("res/fonts/score.ttf", "Score Font");
 
     // Context
     this.ctx = this.domElement.getContext("2d");

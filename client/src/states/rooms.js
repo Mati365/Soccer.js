@@ -24,7 +24,7 @@ export default class RoomList extends State {
     super(Layer.VBox);
 
     this.table = new Table([
-        ["", .03, column => new ListBox.ImageItem(`assets/flags/${column}.png`)]
+        ["", .03, column => new ListBox.ImageItem(`res/flags/${column}.png`)]
       , ["Name", .57]
       , ["Pass", .2]
       , ["Total", .2]

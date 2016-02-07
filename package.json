@@ -1,5 +1,5 @@
 {
-  "name": "hax.js",
+  "name": "Soccer.js",
   "version": "1.0.0",
   "description": "Simple haxball clone written in ES6",
   "main": "server/player.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/haxjs/haxjs-client.git"
+    "url": "https://github.com/Mati365/Soccer.js"
   },
   "keywords": [
     "haxball",
@@ -20,9 +20,9 @@
   "author": "Mateusz Bagiński",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/haxjs/haxjs-client/issues"
+    "url": "https://github.com/Mati365/Soccer.js/issues"
   },
-  "homepage": "https://github.com/haxjs/haxjs-client#readme",
+  "homepage": "https://github.com/Mati365/Soccer.js#readme",
   "dependencies": {
     "blueimp-md5": "^2.1.0",
     "chalk": "^1.1.1",
