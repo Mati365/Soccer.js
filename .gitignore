@@ -3,4 +3,4 @@
 *.log
 !.gitignore
 node_modules/
-public/dist/
+client/dist/
